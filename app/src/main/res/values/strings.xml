@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">ViewCollection</string>
+
+    <string name="dialog_positive_text_default">确定</string>
+    <string name="dialog_negative_text_default">取消</string>
 </resources>

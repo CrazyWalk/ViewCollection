@@ -19,4 +19,16 @@
         <attr name="gridInputIncludeParentMargin" format="boolean" />
         <attr name="gridInputTextSize" format="dimension|reference" />
     </declare-styleable>
+
+    <declare-styleable name="UIRate">
+        <attr name="rateView_distance" format="dimension|reference" />
+        <attr name="rateView_rateCount" format="integer" />
+        <attr name="rateView_rate" format="float" />
+        <attr name="rateView_step" format="float" />
+        <attr name="rateView_fullSrc" format="reference" />
+        <attr name="rateView_emptySrc" format="reference" />
+        <attr name="rateView_srcHeight" format="dimension|reference" />
+        <attr name="rateView_srcWidth" format="dimension|reference" />
+        <attr name="rateView_editEnable" format="boolean" />
+    </declare-styleable>
 </resources>

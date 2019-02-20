@@ -1,4 +1,4 @@
-package org.luyinbros.widget;
+package org.luyinbros.widget.self;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -17,6 +17,8 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
+import org.luyinbros.widget.R;
 
 public class GridInputText extends AppCompatEditText {
     private static final String TAG = "GridInputView";
@@ -98,6 +100,7 @@ public class GridInputText extends AppCompatEditText {
         setItemLineBackgroundWidth(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputItemLineBackgroundWidth, 0));
         setItemLineBackgroundColor(a.getColor(R.styleable.GridInputText_gridInputItemLineBackgroundColor, getCurrentTextColor()));
         setIncludeParentMargin(a.getBoolean(R.styleable.GridInputText_gridInputIncludeParentMargin, true));
+        //R.android.text 会影响绘制。具体原因不明
         setGridTextSize(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputTextSize, (int) getTextSize()));
         setTextColor(getCurrentTextColor());
         a.recycle();

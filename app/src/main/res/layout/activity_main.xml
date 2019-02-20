@@ -8,7 +8,7 @@
     tools:context=".demo.MainActivity">
 
 
-    <org.luyinbros.widget.GridInputText
+    <org.luyinbros.widget.self.GridInputText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:focusableInTouchMode="true"
