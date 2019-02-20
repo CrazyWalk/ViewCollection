@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="GridInputText">
-
         <attr name="gridInputLength" format="integer" />
         <attr name="gridInputItemBackground" format="reference" />
         <attr name="gridInputHide" format="boolean" />
@@ -14,10 +13,10 @@
             <enum name="line" value="1" />
             <enum name="self" value="2" />
         </attr>
-        <attr name="gridInputItemLineBackgroundWidth" format="dimension|reference"/>
-        <attr name="gridInputItemLineBackgroundColor" format="color|reference"/>
-        <attr name="gridInputTextSize" format="reference|dimension" />
-        <attr name="gridInputTextColor" format="reference|color" />
-        <attr name="gridInputChildMargin" format="reference|dimension" />
+        <attr name="gridInputItemLineBackgroundWidth" format="dimension|reference" />
+        <attr name="gridInputItemLineBackgroundColor" format="color|reference" />
+        <attr name="gridInputItemMargin" format="reference|dimension" />
+        <attr name="gridInputIncludeParentMargin" format="boolean" />
+        <attr name="gridInputTextSize" format="dimension|reference" />
     </declare-styleable>
 </resources>

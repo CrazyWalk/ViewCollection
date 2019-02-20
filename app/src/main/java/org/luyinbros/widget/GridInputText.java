@@ -20,20 +20,6 @@ import android.widget.TextView;
 
 public class GridInputText extends AppCompatEditText {
     private static final String TAG = "GridInputView";
-    private final int[] mFocusState = new int[]{android.R.attr.state_focused};
-    private final int[] mNormalState = new int[]{android.R.attr.state_empty};
-
-    private int mMaxInputLength = 6;
-    private Drawable mNormalDrawable;
-    private Drawable mFocusDrawable;
-    private Drawable sourceDrawable;
-    private boolean mIsInputHide = false;
-    private int mChildMargin = 0;
-    private int mInputType = INPUT_NUMBER;
-    private int itemBackgroundType;
-    private int mLineWidth = 1;
-    private int mLineColor;
-    private boolean cursorVisible = true;
     //文本
     public static final int INPUT_TEXT = 0;
     //数字
@@ -45,16 +31,30 @@ public class GridInputText extends AppCompatEditText {
     //Item自定义
     public static final int ITEM_BG_TYPE_SELF = 2;
 
-    private int mCurrentPasswordLength = 0;
-    private Paint mTextPaint = new Paint();
-    private Paint mRadiusPaint = new Paint();
-    private Paint mCursorPaint = new Paint();
+    private int mMaxInputLength;
+    private Drawable mItemDrawable;
+    private boolean mInputHide;
+    private int mItemMargin = 0;
+    private int mInputType;
+    private int mItemBackgroundType;
+    private int mItemLineBackgroundWidth;
+    private int mItemLineBackgroundColor;
+    private boolean mCursorVisible = true;
+    private boolean mIncludeParentMargin;
     private CharSequence mText = "";
-    private Rect maxRect = new Rect();
-    private Rect mRect = new Rect();
-    private int inputViewSquareSize = 0;
-    private boolean isDrawCursor = false;
+
+    private Drawable mNormalDrawable;
+    //   private final int[] mFocusState = new int[]{android.R.attr.state_focused};
+    private final int[] mNormalState = new int[]{android.R.attr.state_empty};
+    private Rect itemRect = new Rect();
+    private Paint mRadiusPaint = new Paint();
+    private Paint mTextPaint = new Paint();
+    private Paint mCursorPaint = new Paint();
+    private int itemWidth;
+    private int itemHeight;
+    private int mCurrentPasswordLength = 0;
     private final int mCursorWidth;
+    private boolean isDrawCursor = true;
     private Runnable drawCursorRunnable = new Runnable() {
         @Override
         public void run() {
@@ -90,31 +90,101 @@ public class GridInputText extends AppCompatEditText {
         setItemBackgroundType(a.getInt(R.styleable.GridInputText_gridInputItemBackgroundType, ITEM_BG_TYPE_RECT));
         Drawable drawable = a.getDrawable(R.styleable.GridInputText_gridInputItemBackground);
         if (drawable != null) {
-            setInputBackgroundDrawable(drawable);
+            setItemDrawable(drawable);
         }
         setInputHide(a.getBoolean(R.styleable.GridInputText_gridInputHide, true));
         setGridInputType(a.getInt(R.styleable.GridInputText_gridInputType, INPUT_NUMBER));
-        setTextColor(a.getColor(R.styleable.GridInputText_gridInputTextColor, getCurrentTextColor()));
-        setTextSize(a.getDimension(R.styleable.GridInputText_gridInputTextSize, getTextSize()));
-        setChildMargin(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputChildMargin, 0));
-        setItemBackgroundLineWidth(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputItemLineBackgroundWidth, 0));
-        setItemBackgroundLineColor(a.getColor(R.styleable.GridInputText_gridInputTextColor, getCurrentTextColor()));
+        setItemMargin(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputItemMargin, 0));
+        setItemLineBackgroundWidth(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputItemLineBackgroundWidth, 0));
+        setItemLineBackgroundColor(a.getColor(R.styleable.GridInputText_gridInputItemLineBackgroundColor, getCurrentTextColor()));
+        setIncludeParentMargin(a.getBoolean(R.styleable.GridInputText_gridInputIncludeParentMargin, true));
+        setGridTextSize(a.getDimensionPixelOffset(R.styleable.GridInputText_gridInputTextSize, (int) getTextSize()));
+        setTextColor(getCurrentTextColor());
         a.recycle();
         mRadiusPaint.setAntiAlias(true);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mCursorPaint.setAntiAlias(true);
-        mCursorPaint.setColor(getCurrentTextColor());
         mCursorWidth = px(1);
         super.setCursorVisible(false);
-        super.setBackgroundColor(getResources().getColor(android.R.color.transparent));
         setCursorVisible(true);
+
+        setTextColor(getCurrentTextColor());
     }
 
+    public void setMaxInputLength(int maxInputLength) {
+        this.mMaxInputLength = maxInputLength;
+        setFilters(new InputFilter[]{new InputFilter.LengthFilter(mMaxInputLength)});
+        invalidate();
+    }
+
+    public void setItemDrawable(Drawable drawable) {
+        if (drawable == null) {
+            mNormalDrawable = null;
+        } else {
+            drawable.setState(mNormalState);
+            mNormalDrawable = drawable.getCurrent();
+        }
+        this.mItemBackgroundType = ITEM_BG_TYPE_SELF;
+        this.mItemDrawable = drawable;
+        invalidate();
+    }
+
+    public void setInputHide(boolean inputHide) {
+        this.mInputHide = inputHide;
+        invalidate();
+    }
+
+    public void setItemMargin(int itemMargin) {
+        this.mItemMargin = itemMargin;
+        invalidate();
+    }
+
+    public void setGridInputType(int inputType) {
+        mInputType = inputType;
+        if (mInputType == INPUT_NUMBER) {
+            super.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+        } else {
+            setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+        }
+    }
+
+    public void setItemBackgroundType(int type) {
+        if (type == ITEM_BG_TYPE_RECT) {
+            setItemDrawable(getItemRectDrawable());
+        } else if (type == ITEM_BG_TYPE_LINE) {
+            setItemDrawable(getItemLineDrawable());
+        } else {
+            setItemDrawable(null);
+        }
+        this.mItemBackgroundType = type;
+        requestLayout();
+    }
+
+    public void setItemLineBackgroundWidth(int itemLineBackgroundWidth) {
+        if (mItemBackgroundType == ITEM_BG_TYPE_LINE &&
+                mItemDrawable instanceof GradientDrawable) {
+            this.mItemLineBackgroundWidth = itemLineBackgroundWidth;
+            ((GradientDrawable) mItemDrawable).setStroke(mItemLineBackgroundWidth, mItemLineBackgroundColor);
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    public void setItemLineBackgroundColor(int itemLineBackgroundColor) {
+        if (mItemBackgroundType == ITEM_BG_TYPE_LINE &&
+                mItemDrawable instanceof GradientDrawable) {
+            this.mItemLineBackgroundColor = itemLineBackgroundColor;
+            ((GradientDrawable) mItemDrawable).setStroke(mItemLineBackgroundWidth, mItemLineBackgroundColor);
+            requestLayout();
+            invalidate();
+        }
+    }
 
     @Override
     public void setCursorVisible(boolean cursorVisible) {
-        this.cursorVisible = cursorVisible;
+        this.mCursorVisible = cursorVisible;
         if (cursorVisible) {
             showCursorVisible(true);
         } else {
@@ -123,7 +193,7 @@ public class GridInputText extends AppCompatEditText {
     }
 
     private void showCursorVisible(boolean isShow) {
-        if (isShow && cursorVisible) {
+        if (isShow && mCursorVisible) {
             isDrawCursor = false;
             postDelayed(drawCursorRunnable, 1000);
         } else {
@@ -132,96 +202,25 @@ public class GridInputText extends AppCompatEditText {
         }
     }
 
+    public void setIncludeParentMargin(boolean includeParentMargin) {
+        this.mIncludeParentMargin = includeParentMargin;
+        invalidate();
+    }
+
+    public void setGridTextSize(float size) {
+        mTextPaint.setTextSize(size);
+        mCursorPaint.setTextSize(size);
+        //super.setTextSize会影响高度
+        invalidate();
+    }
+
     @Override
     public void setTextColor(int color) {
         mTextPaint.setColor(color);
         mRadiusPaint.setColor(color);
-        super.setTextColor(color);
-    }
-
-    @Override
-    public void setTextSize(float size) {
-        mTextPaint.setTextSize(size);
-        mCursorPaint.setTextSize(size);
-        super.setTextSize(size);
-    }
-
-    /**
-     * 设置输出类型
-     *
-     * @param inputType 文本/数字
-     */
-    public void setGridInputType(int inputType) {
-        mInputType = inputType;
-        if (mInputType == INPUT_NUMBER) {
-            setInputType(android.text.InputType.TYPE_CLASS_NUMBER
-                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
-        } else {
-            setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-        }
-    }
-
-    /**
-     * 是否隐藏输入
-     *
-     * @param isInputHide
-     */
-    public void setInputHide(boolean isInputHide) {
-        if (isInputHide == mIsInputHide) {
-            return;
-        }
-        this.mIsInputHide = isInputHide;
+        mCursorPaint.setColor(color);
         invalidate();
-    }
-
-    /**
-     * 设置输入背景图
-     *
-     * @param drawable
-     */
-    public void setInputBackgroundDrawable(Drawable drawable) {
-        if (drawable == null) {
-            mNormalDrawable = null;
-            mFocusDrawable = null;
-        } else {
-            drawable.setState(mNormalState);
-            mNormalDrawable = drawable.getCurrent();
-            drawable.setState(mFocusState);
-            mFocusDrawable = drawable.getCurrent();
-        }
-        this.itemBackgroundType = ITEM_BG_TYPE_SELF;
-        this.sourceDrawable = drawable;
-        invalidate();
-    }
-
-    public void setItemBackgroundType(int itemBackgroundType) {
-        if (itemBackgroundType == ITEM_BG_TYPE_RECT) {
-            setInputBackgroundDrawable(getItemRectDrawable());
-        } else if (itemBackgroundType == ITEM_BG_TYPE_LINE) {
-            setInputBackgroundDrawable(getItemLineDrawable());
-        } else {
-            setInputBackgroundDrawable(null);
-        }
-        this.itemBackgroundType = itemBackgroundType;
-    }
-
-    public void setItemBackgroundLineWidth(int mLineWidth) {
-        if (itemBackgroundType == ITEM_BG_TYPE_LINE &&
-                sourceDrawable instanceof GradientDrawable) {
-            this.mLineWidth = mLineWidth;
-            ((GradientDrawable) sourceDrawable).setStroke(mLineWidth, mLineColor);
-            invalidate();
-        }
-
-    }
-
-    public void setItemBackgroundLineColor(int color) {
-        if (itemBackgroundType == ITEM_BG_TYPE_LINE &&
-                sourceDrawable instanceof GradientDrawable) {
-            mLineColor = color;
-            ((GradientDrawable) sourceDrawable).setStroke(mLineWidth, mLineColor);
-            invalidate();
-        }
+        // super.setTextColor(color);
     }
 
     @Override
@@ -236,54 +235,9 @@ public class GridInputText extends AppCompatEditText {
         showCursorVisible(true);
     }
 
-    /**
-     * 设置最大输入长度
-     */
-    public void setMaxInputLength(int maxLength) {
-        if (maxLength < 0) {
-            return;
-        }
-        mMaxInputLength = maxLength;
-        setFilters(new InputFilter[]{new InputFilter.LengthFilter(mMaxInputLength)});
-        invalidate();
-    }
-
-    public void setChildMargin(int childMargin) {
-        if (mChildMargin == childMargin) {
-            return;
-        }
-        this.mChildMargin = childMargin;
-        invalidate();
-    }
-
     private int px(float dipValue) {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (dipValue * scale + 0.5f);
-    }
-
-    @Override
-    public boolean isSuggestionsEnabled() {
-        return false;
-    }
-
-    @Override
-    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        mCurrentPasswordLength = text.length();
-        mText = text;
-        invalidate();
-    }
-
-    @Override
-    protected void onSelectionChanged(int selStart, int selEnd) {
-        super.onSelectionChanged(selStart, selEnd);
-        Editable editable = getText();
-        if (editable != null) {
-            int length = editable.length();
-            if (selStart != length || selEnd != length) {
-                setSelection(length);
-            }
-        }
-
     }
 
     protected Drawable getItemRectDrawable() {
@@ -301,6 +255,18 @@ public class GridInputText extends AppCompatEditText {
     }
 
     @Override
+    public boolean isSuggestionsEnabled() {
+        return false;
+    }
+
+    @Override
+    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+        mCurrentPasswordLength = text.length();
+        mText = text;
+        invalidate();
+    }
+
+    @Override
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
         if (focused) {
@@ -311,6 +277,20 @@ public class GridInputText extends AppCompatEditText {
     }
 
     @Override
+    protected void onSelectionChanged(int selStart, int selEnd) {
+        super.onSelectionChanged(selStart, selEnd);
+        Editable editable = getText();
+        if (editable != null) {
+            int length = editable.length();
+            if (selStart != length || selEnd != length) {
+                setSelection(length);
+            }
+        }
+
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (mNormalDrawable == null) {
             setMeasuredDimension(0, 0);
@@ -319,18 +299,27 @@ public class GridInputText extends AppCompatEditText {
                 setMeasuredDimension(0, 0);
             } else {
                 final int parentWidth = MeasureSpec.getSize(widthMeasureSpec);
-                inputViewSquareSize = (parentWidth - mChildMargin * (mMaxInputLength + 1)) / mMaxInputLength;
-                if (inputViewSquareSize <= 0) {
+                if (mIncludeParentMargin) {
+                    itemWidth = (parentWidth - mItemMargin * (mMaxInputLength + 1)) / mMaxInputLength;
+                } else {
+                    itemWidth = (parentWidth - mItemMargin * (mMaxInputLength - 1)) / mMaxInputLength;
+                }
+
+                if (itemWidth <= 0) {
+                    itemWidth = 0;
+                    itemHeight = 0;
                     setMeasuredDimension(0, 0);
                 } else {
                     switch (MeasureSpec.getMode(heightMeasureSpec)) {
                         case MeasureSpec.EXACTLY:
-                            setMeasuredDimension(parentWidth, MeasureSpec.getSize(heightMeasureSpec));
+                            itemHeight = MeasureSpec.getSize(heightMeasureSpec);
+                            setMeasuredDimension(parentWidth, itemHeight);
                             break;
                         case MeasureSpec.AT_MOST:
                         case MeasureSpec.UNSPECIFIED:
                         default:
-                            setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), inputViewSquareSize);
+                            itemHeight = itemWidth;
+                            setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), itemHeight);
                             break;
 
                     }
@@ -338,6 +327,7 @@ public class GridInputText extends AppCompatEditText {
             }
         }
     }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -347,51 +337,55 @@ public class GridInputText extends AppCompatEditText {
         if (mMaxInputLength == 0) {
             return;
         }
-
-
-        int maxRectLeft = mChildMargin;
-        final int widgetHeight = getMeasuredHeight();
+        itemRect.set(0, 0, 0, itemHeight);
+        int startLeft = mIncludeParentMargin ? mItemMargin : 0;
         for (int index = 0; index < mMaxInputLength; index++) {
-            maxRect.set(maxRectLeft, 0,
-                    maxRectLeft + inputViewSquareSize, widgetHeight);
-            mRect.set(maxRect.centerX() - inputViewSquareSize / 2,
-                    maxRect.centerY() - widgetHeight / 2,
-                    maxRect.centerX() + inputViewSquareSize / 2,
-                    maxRect.centerY() + widgetHeight / 2);
-            if (itemBackgroundType == ITEM_BG_TYPE_LINE) {
-                //line的特性，它会显示在bounds的中央，为了移动到下班，超边界
-                mNormalDrawable.setBounds(mRect.left,
-                        mRect.top + mRect.centerY() - mLineWidth,
-                        mRect.right,
-                        mRect.bottom + mRect.centerY());
+            itemRect.left = startLeft;
+            itemRect.right = itemRect.left + itemWidth;
+            if (mItemBackgroundType == ITEM_BG_TYPE_LINE) {
+                mNormalDrawable.setBounds(itemRect.left,
+                        0,
+                        itemRect.right,
+                        itemHeight * 2);
             } else {
-                mNormalDrawable.setBounds(mRect.left,
-                        mRect.top,
-                        mRect.right,
-                        mRect.bottom);
+                mNormalDrawable.setBounds(itemRect.left,
+                        itemRect.top,
+                        itemRect.right,
+                        itemRect.bottom);
             }
             mNormalDrawable.draw(canvas);
             if (mCurrentPasswordLength > index) {
-                if (mIsInputHide) {
-                    canvas.drawCircle(mRect.centerX(), mRect.centerY(), ((mTextPaint.descent() - mTextPaint.ascent()) / 2), mRadiusPaint);
+                if (mInputHide) {
+                    canvas.drawCircle(itemRect.centerX(),
+                            itemRect.centerY(),
+                            ((mTextPaint.descent() - mTextPaint.ascent()) / 2),
+                            mRadiusPaint);
                 } else {
                     Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
                     float top = fontMetrics.top;
                     float bottom = fontMetrics.bottom;
-                    canvas.drawText(mText.subSequence(index, index + 1) + "", mRect.centerX(), (int) (mRect.centerY() - top / 2 - bottom / 2), mTextPaint);
+                    canvas.drawText(mText.subSequence(index, index + 1) + "",
+                            itemRect.centerX(),
+                            (int) (itemRect.centerY() - top / 2 - bottom / 2),
+                            mTextPaint);
                 }
             }
-            maxRectLeft += inputViewSquareSize + mChildMargin;
+            startLeft = itemRect.right + mItemMargin;
         }
-        int a = 1;
         if (isDrawCursor && mCurrentPasswordLength < mMaxInputLength) {
-            float left = (inputViewSquareSize + mChildMargin) * mCurrentPasswordLength + mChildMargin +
-                    inputViewSquareSize / 2 - mCursorWidth * 1.0f / 2;
-            float top = widgetHeight / 2.0f - (mTextPaint.descent() - mTextPaint.ascent()) / 2.0f;
-            canvas.drawRect(left, top, left + mCursorWidth * 1.0f, top + mTextPaint.descent() - mTextPaint.ascent(), mCursorPaint);
+//            float left =
+//
+//                    (itemWidth + mItemMargin) * mCurrentPasswordLength + itemWidth +
+//                    itemWidth / 2 - mCursorWidth * 1.0f / 2;
+            float left = itemWidth * mCurrentPasswordLength
+                    + (mIncludeParentMargin ? mItemMargin * mCurrentPasswordLength : mItemMargin * (mCurrentPasswordLength - 1))
+                    + itemWidth / 2 - mCursorWidth / 2.0f;
+            float top = itemHeight / 2.0f - (mTextPaint.descent() - mTextPaint.ascent()) / 2.0f;
+            canvas.drawRect(left, top,
+                    left + mCursorWidth * 1.0f,
+                    top + mTextPaint.descent() - mTextPaint.ascent(),
+                    mCursorPaint);
         }
-
-
     }
 
     @Override
@@ -399,7 +393,7 @@ public class GridInputText extends AppCompatEditText {
         return new ArrowKeyMovementMethod() {
             @Override
             protected boolean handleMovementKey(TextView widget, Spannable buffer, int keyCode, int movementMetaState, KeyEvent event) {
-                return super.handleMovementKey(widget,buffer,keyCode,movementMetaState,event);
+                return super.handleMovementKey(widget, buffer, keyCode, movementMetaState, event);
             }
 
             @Override
