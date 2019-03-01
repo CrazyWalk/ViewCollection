@@ -11,17 +11,17 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class UIList extends RecyclerView {
+public class UIRecyclerView extends RecyclerView {
 
-    public UIList(@NonNull Context context) {
+    public UIRecyclerView(@NonNull Context context) {
         super(context);
     }
 
-    public UIList(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public UIRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public UIList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
+    public UIRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
