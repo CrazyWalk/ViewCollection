@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false">
+
+
+    <org.luyinbros.widget.self.HeartTextView
+        android:id="@+id/heartCountView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <org.luyinbros.widget.self.PraiseTextView
+        android:id="@+id/praiseTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/heartCountView" />
+
+    <org.luyinbros.widget.self.AvatarSetView
+        android:id="@+id/avatarSetView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/praiseTextView" />
+
+    <Button
+        android:id="@+id/avatarSetViewInsertLastButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Insert Last"
+        app:layout_constraintBottom_toBottomOf="@+id/avatarSetViewInsertFirstButton"
+        app:layout_constraintStart_toEndOf="@+id/avatarSetViewInsertFirstButton"
+        app:layout_constraintTop_toTopOf="@+id/avatarSetViewInsertFirstButton" />
+
+    <Button
+        android:id="@+id/avatarSetViewInsertFirstButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Insert First"
+        app:layout_constraintBottom_toBottomOf="@+id/avatarSetView"
+        app:layout_constraintStart_toEndOf="@+id/avatarSetView"
+        app:layout_constraintTop_toTopOf="@+id/avatarSetView" />
+
+</android.support.constraint.ConstraintLayout>

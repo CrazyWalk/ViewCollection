@@ -334,6 +334,7 @@ public class GridInputText extends AppCompatEditText {
 
     @Override
     protected void onDraw(Canvas canvas) {
+
         if (mNormalDrawable == null) {
             return;
         }

@@ -84,44 +84,11 @@ public class DefaultBannerIndicator extends View implements BannerView.Indicator
             }
             cx += 2 * mRadius + interval;
         }
-//        int longSize;
-//        int longPaddingBefore;
-//        int longPaddingAfter;
-//        int shortPaddingBefore;
-//
-//        longSize = getWidth();
-//        longPaddingBefore = getPaddingLeft();
-//        longPaddingAfter = getPaddingRight();
-//        shortPaddingBefore = getPaddingTop();
-//
-//
-//        final float threeRadius = 3 * mRadius;
-//        final float shortOffset = shortPaddingBefore + mRadius;
-//
-//        float longOffset = longPaddingBefore + mRadius;
-//
-//        float dX;
-//        float dY;
-//
-//        //draw stroke circle
-//        for (int iLoop = 0; iLoop < count; iLoop++) {
-//            dY = shortOffset;
-//            dX = longOffset + iLoop * threeRadius;
-//
-//            canvas.drawCircle(dX, dY, mRadius, mPaintStroke);
-//        }
-//        //draw page circle
-//        float cx = mCurrentPage * threeRadius;
-//
-//        dX = cx + longOffset;
-//        dY = shortOffset;
-//        canvas.drawCircle(dX, dY, mRadius, mPaintPageFill);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(measureLongEdge(widthMeasureSpec), measureShortEdge(heightMeasureSpec));
-
     }
 
     /**

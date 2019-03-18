@@ -130,6 +130,18 @@ public class BannerView extends FrameLayout implements PagerView {
         mAutoScrollHandler.removeCallbacks(mAutoScrollRunnable);
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        startAutoScroll();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        stopAutoScroll();
+    }
+
     public interface Indicator extends ViewPager.OnPageChangeListener {
         int SCROLL_STATE_IDLE = ViewPager.SCROLL_STATE_IDLE;
         int SCROLL_STATE_DRAGGING = ViewPager.SCROLL_STATE_DRAGGING;
@@ -153,7 +165,6 @@ public class BannerView extends FrameLayout implements PagerView {
 
     public static abstract class Adapter<VH extends ViewHolder> {
         private BannerView bannerView;
-
 
         public abstract VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType);
 

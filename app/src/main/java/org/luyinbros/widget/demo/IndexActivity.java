@@ -31,6 +31,18 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), BannerViewActivity.class);
                     }
+                }),
+                new IndexItem("小控件", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), SmallWidgetActivity.class);
+                    }
+                }),
+                new IndexItem("状态视图", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), StatusViewActivity.class);
+                    }
                 })
         };
 
