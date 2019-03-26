@@ -3,12 +3,14 @@ package org.luyinbros.widget.list;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.luyinbros.widget.R;
 
 public class SimpleGridLayout extends ViewGroup {
+    private static final String TAG = "SimpleGridLayout";
     private int columnCount = 3;
     private int mColumnMargin = 0;
     private int mRowMargin = 0;
@@ -62,7 +64,8 @@ public class SimpleGridLayout extends ViewGroup {
             for (int i = 0; i < childCount; i++) {
                 child = getChildAt(i);
                 lp = (LayoutParams) child.getLayoutParams();
-                measureChild(child,
+
+                child.measure(
                         getChildMeasureSpec(MeasureSpec.makeMeasureSpec(itemWidth, MeasureSpec.EXACTLY), 0, lp.width),
                         getChildMeasureSpec(heightMeasureSpec, 0, lp.height));
             }

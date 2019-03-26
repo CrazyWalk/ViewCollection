@@ -6,17 +6,18 @@
     android:orientation="vertical">
 
     <org.luyinbros.widget.list.SimpleGridLayout
+        android:id="@+id/simpleGridLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="#A7FF34"
-        android:paddingStart="10dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="0dp"
-        android:paddingBottom="5dp"
-        app:sgl_column="1"
-        app:sgl_columnMargin="10dp"
-        app:sgl_rowMargin="10dp">
+        android:paddingStart="10px"
+        android:paddingTop="5px"
+        android:paddingEnd="0px"
+        android:paddingBottom="5px"
+        app:sgl_column="3"
+        app:sgl_columnMargin="10px"
+        app:sgl_rowMargin="10px">
 
         <TextView
             android:layout_width="match_parent"
@@ -48,5 +49,46 @@
             android:background="#FFC529"
             android:text="5" />
 
+    </org.luyinbros.widget.list.SimpleGridLayout>
+
+    <org.luyinbros.widget.list.SimpleGridLayout
+        android:layout_width="match_parent"
+        app:sgl_column="3"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onSetInvalidated"
+            android:text="重置数据" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onChangedFirst"
+            android:text="改变第一项数据" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onChangedLast"
+            android:text="改变最后一项数据" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onLastInsert"
+            android:text="最后插入一条数据" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onDelete"
+            android:text="删除一条数据" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onInsert"
+            android:text="插入一条数据" />
     </org.luyinbros.widget.list.SimpleGridLayout>
 </LinearLayout>

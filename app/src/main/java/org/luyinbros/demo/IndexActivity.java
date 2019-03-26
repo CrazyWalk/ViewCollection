@@ -55,6 +55,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), SimpleListViewActivity.class);
                     }
+                }),
+                new IndexItem("A to Z", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), A2ZActivity.class);
+                    }
                 })
         };
 
