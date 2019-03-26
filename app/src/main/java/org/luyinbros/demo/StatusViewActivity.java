@@ -1,4 +1,4 @@
-package org.luyinbros.widget.demo;
+package org.luyinbros.demo;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,6 +8,8 @@ import android.view.View;
 
 import org.luyinbros.widget.R;
 import org.luyinbros.widget.status.DefaultStatusLayoutController;
+import org.luyinbros.widget.status.OnPageRefreshListener;
+import org.luyinbros.widget.status.SampleEmptyStatusPage;
 import org.luyinbros.widget.status.StatusLayoutController;
 import org.luyinbros.widget.status.StatusViewFactory;
 
@@ -20,10 +22,14 @@ public class StatusViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_status_view);
         statusLayoutController = new DefaultStatusLayoutController(findViewById(R.id.mContentView));
-        statusLayoutController.addStatusPage(StatusViewFactory.defaultEmptyPage(this));
+        statusLayoutController.addStatusPage(new SampleEmptyStatusPage(this) {
+            {
+                this.textView.setText("1");
+            }
+        });
         statusLayoutController.addStatusPage(StatusViewFactory.defaultFailurePage(this));
         statusLayoutController.addStatusPage(StatusViewFactory.defaultRefreshPage(this));
-        statusLayoutController.setOnPageRefreshListener(new StatusLayoutController.OnPageRefreshListener() {
+        statusLayoutController.setOnPageRefreshListener(new OnPageRefreshListener() {
             @Override
             public void onPageRefresh() {
                 Log.d(TAG, "onPageRefresh: ");

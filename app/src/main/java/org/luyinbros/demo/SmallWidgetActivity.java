@@ -1,4 +1,4 @@
-package org.luyinbros.widget.demo;
+package org.luyinbros.demo;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

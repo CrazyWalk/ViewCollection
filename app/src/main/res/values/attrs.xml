@@ -31,4 +31,10 @@
         <attr name="rateView_srcWidth" format="dimension|reference" />
         <attr name="rateView_editEnable" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="SimpleGridLayout">
+        <attr name="sgl_column" format="integer" />
+        <attr name="sgl_columnMargin" format="dimension|reference" />
+        <attr name="sgl_rowMargin" format="dimension|reference" />
+    </declare-styleable>
 </resources>

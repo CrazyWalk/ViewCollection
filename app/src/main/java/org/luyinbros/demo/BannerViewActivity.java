@@ -1,4 +1,4 @@
-package org.luyinbros.widget.demo;
+package org.luyinbros.demo;
 
 import android.graphics.Color;
 import android.os.Bundle;

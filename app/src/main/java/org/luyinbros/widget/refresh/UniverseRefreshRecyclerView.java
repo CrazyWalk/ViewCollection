@@ -17,6 +17,7 @@ import org.luyinbros.widget.recyclerview.CellSpan;
 import org.luyinbros.widget.recyclerview.RecyclerViewCell;
 import org.luyinbros.widget.recyclerview.ViewCellAdapter;
 import org.luyinbros.widget.status.DefaultStatusLayoutController;
+import org.luyinbros.widget.status.OnPageRefreshListener;
 import org.luyinbros.widget.status.StatusLayoutController;
 
 public class UniverseRefreshRecyclerView extends RefreshLayout implements RefreshListController {
@@ -71,9 +72,11 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
             if (isLoadMoreEnable) {
                 if (mLoadMoreRefreshController == null) {
                     mLoadMoreRefreshController = new LoadMoreCell();
+                    mLoadMoreRefreshController.setOnLoadMoreRefreshListener(mOnLoadMoreRefreshListener);
                 }
                 ((ViewCellAdapter) mAdapter).setBottomCell((RecyclerViewCell) mLoadMoreRefreshController);
             } else {
+                setLoadMoreStatus(LOAD_MORE_STATUS_INVALID);
                 ((ViewCellAdapter) mAdapter).removeBottomCell();
             }
         }
@@ -84,6 +87,10 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
         return isLoadMoreEnable;
     }
 
+    @Override
+    public boolean isLoadMoreRefreshing() {
+        return getLoadMoreStatus() == LOAD_MORE_STATUS_REFRESH;
+    }
 
     @Override
     public void addStatusPage(StatusPage statusView) {
@@ -247,6 +254,26 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
         mRecyclerView.stopScroll();
     }
 
+    @Override
+    public int getItemCount() {
+        if (mAdapter == null) {
+            return 0;
+        } else {
+            if (mAdapter instanceof ViewCellAdapter) {
+                return ((ViewCellAdapter) mAdapter).getCellItemCount();
+            } else {
+                return mAdapter.getItemCount();
+            }
+        }
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     private static class LoadMoreCell extends RecyclerViewCell<LoadMoreCell.ItemHolder> implements LoadMoreRefreshController, CellSpan {
         private int mStatus;
         private OnLoadMoreRefreshListener onLoadMoreRefreshListener;
@@ -283,7 +310,7 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
         }
 
         @Override
-        public void setLoadMoreStatus(int status) {
+        public synchronized void setLoadMoreStatus(int status) {
             if (mStatus != status) {
                 if (status == LOAD_MORE_STATUS_REFRESH) {
                     if (onLoadMoreRefreshListener != null) {
@@ -304,6 +331,12 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
         public boolean isLoadMoreEnable() {
             //no support
             return true;
+        }
+
+        @Override
+        public boolean isLoadMoreRefreshing() {
+            //no support
+            return false;
         }
 
         @Override
@@ -365,7 +398,7 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
 
             @SuppressWarnings("unchecked")
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
 
                 if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_IDLE) {
                     final RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
@@ -375,7 +408,7 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
                     if (layoutManager.getChildCount() > 0
                             && newState == RecyclerView.SCROLL_STATE_IDLE
                             && lastVisibleItemPosition == layoutManager.getItemCount() - 1) {
-                        setLoadMoreStatus(LoadMoreRefreshController.LOAD_MORE_STATUS_IDLE);
+                        setLoadMoreStatus(LoadMoreRefreshController.LOAD_MORE_STATUS_REFRESH);
                     }
                 }
 

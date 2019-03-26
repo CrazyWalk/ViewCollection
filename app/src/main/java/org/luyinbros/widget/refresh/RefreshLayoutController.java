@@ -12,8 +12,5 @@ public interface RefreshLayoutController {
 
     void setPullDownRefreshEnable(boolean isEnable);
 
-    interface OnPullDownRefreshListener {
-        void onPullDownRefresh();
-    }
 
 }

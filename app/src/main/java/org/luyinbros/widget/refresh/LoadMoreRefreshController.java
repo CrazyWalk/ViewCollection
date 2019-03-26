@@ -15,10 +15,7 @@ public interface LoadMoreRefreshController {
 
     void setLoadMoreEnable(boolean enable);
 
-
     boolean isLoadMoreEnable();
 
-    interface OnLoadMoreRefreshListener {
-        void onLoadMoreRefresh();
-    }
+    boolean isLoadMoreRefreshing();
 }

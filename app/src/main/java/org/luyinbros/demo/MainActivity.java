@@ -1,4 +1,4 @@
-package org.luyinbros.widget.demo;
+package org.luyinbros.demo;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

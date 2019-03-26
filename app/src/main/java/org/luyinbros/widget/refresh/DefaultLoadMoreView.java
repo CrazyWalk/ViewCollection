@@ -29,7 +29,7 @@ public class DefaultLoadMoreView extends LinearLayoutCompat {
 
         setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(44)));
         setGravity(Gravity.CENTER);
-        setPadding(0, px(10), 0,px( 10));
+        setPadding(0, px(10), 0, px(10));
         setOrientation(HORIZONTAL);
 
     }
@@ -52,29 +52,31 @@ public class DefaultLoadMoreView extends LinearLayoutCompat {
     }
 
     public void setStatus(int status) {
-        if (mStatus != status) {
-            this.mStatus = status;
-            if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_IDLE) {
-                statusTextView.setText("上拉加载更多");
-                refreshImageView.setVisibility(View.GONE);
-            } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_REFRESH) {
-                statusTextView.setText("加载中");
-                refreshImageView.setVisibility(View.VISIBLE);
-            } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_NO_MORE) {
-                statusTextView.setText("底线在此，不能更低了呦~");
-                refreshImageView.setVisibility(View.GONE);
-            } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_FAILURE) {
-                statusTextView.setText("上拉加载错误，点击重新刷新");
-                refreshImageView.setVisibility(View.GONE);
-            } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_INVALID) {
-                statusTextView.setVisibility(GONE);
-                refreshImageView.setVisibility(View.GONE);
-            }
+        mStatus = status;
+        if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_IDLE) {
+            statusTextView.setText("上拉加载更多");
+            statusTextView.setVisibility(VISIBLE);
+            refreshImageView.setVisibility(View.GONE);
+        } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_REFRESH) {
+            statusTextView.setText("加载中");
+            statusTextView.setVisibility(VISIBLE);
+            refreshImageView.setVisibility(View.VISIBLE);
+        } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_NO_MORE) {
+            statusTextView.setText("底线在此，不能更低了呦~");
+            statusTextView.setVisibility(VISIBLE);
+            refreshImageView.setVisibility(View.GONE);
+        } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_FAILURE) {
+            statusTextView.setText("上拉加载错误，点击重新刷新");
+            statusTextView.setVisibility(VISIBLE);
+            refreshImageView.setVisibility(View.GONE);
+        } else if (mStatus == LoadMoreRefreshController.LOAD_MORE_STATUS_INVALID) {
+            statusTextView.setVisibility(GONE);
+            refreshImageView.setVisibility(View.GONE);
         }
 
     }
 
-    private  int px( final float dpValue) {
+    private int px(final float dpValue) {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }

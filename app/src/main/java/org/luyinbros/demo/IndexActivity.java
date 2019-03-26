@@ -1,4 +1,4 @@
-package org.luyinbros.widget.demo;
+package org.luyinbros.demo;
 
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +42,18 @@ public class IndexActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         startActivity(v.getContext(), StatusViewActivity.class);
+                    }
+                }),
+                new IndexItem("刷新列表逻辑", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), RefreshListActivity.class);
+                    }
+                }),
+                new IndexItem("简单的列表控制器", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), SimpleListViewActivity.class);
                     }
                 })
         };

@@ -13,18 +13,20 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:appComponentFactory">
-        <activity android:name=".demo.IndexActivity">
+        <activity android:name="org.luyinbros.demo.IndexActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".demo.BannerViewActivity">
+        <activity android:name="org.luyinbros.demo.RefreshListActivity" />
+        <activity android:name="org.luyinbros.demo.BannerViewActivity">
 
         </activity>
-        <activity android:name=".demo.SmallWidgetActivity" />
-        <activity android:name=".demo.StatusViewActivity" />
+        <activity android:name="org.luyinbros.demo.SmallWidgetActivity" />
+        <activity android:name="org.luyinbros.demo.StatusViewActivity" />
+        <activity android:name="org.luyinbros.demo.SimpleListViewActivity"/>
     </application>
 
 </manifest>

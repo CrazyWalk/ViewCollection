@@ -27,9 +27,6 @@ public interface StatusLayoutController {
 
     int getPageStatus();
 
-    interface OnPageRefreshListener {
-        void onPageRefresh();
-    }
 
     interface StatusPage {
         @IntRange(from = 0)
