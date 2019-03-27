@@ -4,10 +4,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <org.luyinbros.widget.self.A2ZSideBar
-        android:id="@+id/mSideBar"
+    <org.luyinbros.widget.self.A2ZGroupListView
+        android:id="@+id/mGroupListView"
         android:layout_width="match_parent"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
         android:layout_height="wrap_content" />
+
+    <!--<org.luyinbros.widget.self.A2ZSideBar-->
+        <!--android:id="@+id/mSideBar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:paddingStart="10dp"-->
+        <!--android:paddingEnd="10dp" />-->
 </FrameLayout>

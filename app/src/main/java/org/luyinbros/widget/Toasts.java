@@ -42,8 +42,7 @@ public class Toasts {
 
     private static Toast getToast(@NonNull Context context) {
         if (toastReference == null || toastReference.get() == null) {
-            Toast toast = new Toast(context);
-            toast.setDuration(Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context,"",Toast.LENGTH_SHORT);
             toastReference = new SoftReference<>(toast);
         }
         return toastReference.get();

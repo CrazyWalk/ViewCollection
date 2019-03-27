@@ -31,11 +31,6 @@ public class A2ZSideBar extends View {
         mTextPaint.setTextSize(40);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
-        mLetters = new ArrayList<>();
-        for (int i = 0; i < 26; i++) {
-            mLetters.add(new String(new char[]{(char) ('a' + i)}));
-        }
-        setup(mLetters);
     }
 
     public void setup(List<String> letters) {

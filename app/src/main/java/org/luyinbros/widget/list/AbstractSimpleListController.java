@@ -97,7 +97,29 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
 
     @Override
     public final void notifyItemRangeChanged(int positionStart, int itemCount) {
+        if (positionStart >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else if (positionStart + itemCount >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else {
+            checkViewHolder();
+            int cacheHolderSize = mViewHolderList.size();
+            for (int i = positionStart; i < positionStart + itemCount; i++) {
+                VH cacheHolder = mViewHolderList.get(i);
+                if (i < cacheHolderSize) {
+                    if (isMatchHolder(cacheHolder, i)) {
+                        onBindViewHolder(cacheHolder, i);
+                    } else {
+                        notifyItemRemoved(i);
+                        notifyItemInserted(i);
+                    }
+                } else {
+                    notifyItemInserted(i);
+                }
 
+            }
+
+        }
     }
 
     @Override
@@ -114,7 +136,21 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
     }
 
     public final void notifyItemRangeInserted(int positionStart, int itemCount) {
-
+        if (positionStart >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else if (positionStart + itemCount >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else {
+            checkViewHolder();
+            int cacheHolderSize = mViewHolderList.size();
+            if (positionStart >= cacheHolderSize) {
+                for (int i = positionStart; i < positionStart + itemCount; i++) {
+                    notifyItemInserted(i);
+                }
+            } else {
+                throw new IndexOutOfBoundsException("");
+            }
+        }
     }
 
     @Override
@@ -130,7 +166,21 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
 
     @Override
     public final void notifyItemRangeRemoved(int positionStart, int itemCount) {
-
+        if (positionStart >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else if (positionStart + itemCount >= getItemCount()) {
+            throw new IndexOutOfBoundsException("");
+        } else {
+            checkViewHolder();
+            int cacheHolderSize = mViewHolderList.size();
+            if (positionStart >= cacheHolderSize) {
+                for (int i = positionStart + itemCount; i > positionStart - 1; i++) {
+                    notifyItemRemoved(i);
+                }
+            } else {
+                throw new IndexOutOfBoundsException("");
+            }
+        }
     }
 
     private void checkViewHolder() {
