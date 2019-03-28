@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.luyinbros.demo.dispatcher.DispatcherFragmentActivity;
+
 public class IndexActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
 
@@ -60,6 +62,12 @@ public class IndexActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         startActivity(v.getContext(), A2ZActivity.class);
+                    }
+                }),
+                new IndexItem("单Activity架构", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), DispatcherFragmentActivity.class);
                     }
                 })
         };

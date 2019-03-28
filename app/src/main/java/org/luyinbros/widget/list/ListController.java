@@ -1,9 +1,13 @@
 package org.luyinbros.widget.list;
 
-public interface ListController {
+import android.support.annotation.NonNull;
+import android.view.View;
+
+public interface ListController<VH extends ListController.ViewHolder> {
 
     int getItemCount();
 
+    int getHolderPosition(VH holder);
 
     void notifyDataSetInvalidated();
 
@@ -20,4 +24,25 @@ public interface ListController {
     void notifyItemRemoved(int position);
 
     void notifyItemRangeRemoved(int positionStart, int itemCount);
+
+    class ViewHolder {
+        public View itemView;
+        int mItemViewType = -1;
+        ListController listController;
+
+        public ViewHolder(@NonNull View itemView) {
+            this.itemView = itemView;
+        }
+
+        public int getItemViewType() {
+            return mItemViewType;
+        }
+
+        public int getPosition() {
+            if (listController == null) {
+                return -1;
+            }
+            return listController.getHolderPosition(this);
+        }
+    }
 }

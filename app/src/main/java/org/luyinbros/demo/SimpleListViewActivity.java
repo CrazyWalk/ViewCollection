@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import org.luyinbros.widget.R;
 import org.luyinbros.widget.list.AbstractSimpleListController;
+import org.luyinbros.widget.list.ListController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,7 @@ public class SimpleListViewActivity extends AppCompatActivity {
         }
     }
 
-    private static class ViewHolder extends AbstractSimpleListController.ViewHolder {
+    private static class ViewHolder extends ListController.ViewHolder {
         private TextView textView;
 
         public ViewHolder(@NonNull TextView textView) {

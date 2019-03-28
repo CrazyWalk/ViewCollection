@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractSimpleListController<VH extends AbstractSimpleListController.ViewHolder> implements ListController {
+public abstract class AbstractSimpleListController<VH extends AbstractSimpleListController.ViewHolder> implements ListController<VH> {
     private List<VH> mViewHolderList = new ArrayList<>();
     private ViewGroup mParent;
 
@@ -183,6 +183,12 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         }
     }
 
+    @Override
+    public int getHolderPosition(VH holder) {
+        checkViewHolder();
+        return mViewHolderList.indexOf(holder);
+    }
+
     private void checkViewHolder() {
         int cacheHolderSize = mViewHolderList.size();
         int parentChildSize = mParent.getChildCount();
@@ -210,23 +216,9 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
     private VH _onCreateHolder(ViewGroup container, int viewType) {
         VH vh = onCreateHolder(container, viewType);
         vh.mItemViewType = viewType;
+
         return vh;
     }
 
-    public static class ViewHolder {
-        public View itemView;
-        int mItemViewType = -1;
 
-        public ViewHolder(@NonNull View itemView) {
-            this.itemView = itemView;
-        }
-
-        public int getItemViewType() {
-            return mItemViewType;
-        }
-
-        public int getPosition() {
-            return -1;
-        }
-    }
 }

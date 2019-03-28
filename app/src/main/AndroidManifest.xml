@@ -26,8 +26,9 @@
         </activity>
         <activity android:name="org.luyinbros.demo.SmallWidgetActivity" />
         <activity android:name="org.luyinbros.demo.StatusViewActivity" />
-        <activity android:name="org.luyinbros.demo.SimpleListViewActivity"/>
-        <activity android:name="org.luyinbros.demo.A2ZActivity"/>
+        <activity android:name="org.luyinbros.demo.SimpleListViewActivity" />
+        <activity android:name="org.luyinbros.demo.A2ZActivity" />
+        <activity android:name="org.luyinbros.demo.dispatcher.DispatcherFragmentActivity" />
     </application>
 
 </manifest>

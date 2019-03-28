@@ -47,7 +47,6 @@ public class A2ZGroupListView extends FrameLayout {
                 public void onLetterSelected(int position) {
                     if (position > -1) {
                         if (mAdapter != null) {
-                            Log.d("ATOZ", "scroll: " + mAdapter.innerAdapter.getGroupRealPosition(position));
                             mRecyclerView.scrollToPosition(mAdapter.innerAdapter.getGroupRealPosition(position));
                         }
                     } else {
@@ -288,14 +287,11 @@ public class A2ZGroupListView extends FrameLayout {
                 return -1;
             }
             int totalCount = mAdapter.getHeaderItemCount();
-            if (totalCount == 1) {
-                return totalCount + 1;
-            }
             for (int i = 0; i < groupPosition; i++) {
                 totalCount++;
                 totalCount += mAdapter.getGroupChildItemCount(i);
             }
-            return totalCount + 1;
+            return totalCount ;
         }
     }
 

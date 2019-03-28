@@ -37,4 +37,9 @@
         <attr name="sgl_columnMargin" format="dimension|reference" />
         <attr name="sgl_rowMargin" format="dimension|reference" />
     </declare-styleable>
+
+    <declare-styleable name="FlowLayout">
+        <attr name="flowL_columnMargin" format="dimension|reference" />
+        <attr name="flowL_rowMargin" format="dimension|reference" />
+    </declare-styleable>
 </resources>
