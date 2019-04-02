@@ -1,4 +1,4 @@
-package org.luyinbros.update.core;
+package org.luyinbros.update;
 
 import android.os.Parcelable;
 

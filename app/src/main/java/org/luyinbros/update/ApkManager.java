@@ -1,9 +1,7 @@
-package org.luyinbros.update.core;
+package org.luyinbros.update;
 
 import android.net.Uri;
 import android.support.annotation.Nullable;
-
-import org.luyinbros.update.DefaultAppUpdateInfo;
 
 import java.io.File;
 
@@ -19,7 +17,7 @@ public interface ApkManager<T extends AppUpdateInfo> {
 
     boolean isDownloading();
 
-    void registerDownloadApkListener(OnDownloadApkListener<DefaultAppUpdateInfo> listener);
+    void registerDownloadApkListener(OnDownloadApkListener<T> listener);
 
-    void unregisterDownloadApkListener(OnDownloadApkListener<DefaultAppUpdateInfo> listener);
+    void unregisterDownloadApkListener(OnDownloadApkListener<T> listener);
 }

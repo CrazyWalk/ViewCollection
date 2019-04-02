@@ -1,4 +1,4 @@
-package org.luyinbros.update.core;
+package org.luyinbros.update;
 
 public interface AppUpdateSession<T extends AppUpdateInfo> {
 

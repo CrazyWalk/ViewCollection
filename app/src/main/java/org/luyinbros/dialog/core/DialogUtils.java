@@ -1,4 +1,4 @@
-package org.luyinbros.dialog;
+package org.luyinbros.dialog.core;
 
 import android.app.Activity;
 import android.content.Context;

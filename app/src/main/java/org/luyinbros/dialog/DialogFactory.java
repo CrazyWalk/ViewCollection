@@ -10,7 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 public class DialogFactory {
     public static final String LOADING_DIALOG_NAME = "LoadingDialog";
     public static final String DATE_PICKER_DIALOG_NAME = "DatePickerDialog";
-
+    public static final String ADDRESS_PICKER_DIALOG_NAME = "AddressPickerDialog";
 
     public static void showDialog(@Nullable DialogFragment dialogFragment,
                                   @Nullable FragmentManager fragmentManager,

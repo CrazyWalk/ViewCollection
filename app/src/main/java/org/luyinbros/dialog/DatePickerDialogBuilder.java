@@ -7,25 +7,33 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
-import android.util.TimeUtils;
 
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.date.DateRangeLimiter;
 
+import org.luyinbros.dialog.core.DialogUtils;
+import org.luyinbros.dialog.view.DatePickerDelegate;
+
 import java.util.Calendar;
-import java.util.Date;
 
 public class DatePickerDialogBuilder {
-   // private DatePickerDialog mDialog;
+    private DatePickerDelegate.CompatDatePickerDialog mDialog;
     private FragmentManager mFragmentManager;
     private Context mContext;
     private OnDatePickListener onDatePickListener;
-    private DefaultDateRangerLimiter mRangerLimiter;
 
     public DatePickerDialogBuilder(@Nullable Context context) {
         mContext = DialogUtils.getDialogContext(context);
         mFragmentManager = DialogUtils.getFragmentManager(context);
-
+        mDialog = DatePickerDelegate.CompatDatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                if (onDatePickListener != null) {
+                    onDatePickListener.onPick(year, monthOfYear, dayOfMonth);
+                }
+                view.dismiss();
+            }
+        });
 
     }
 
@@ -34,42 +42,47 @@ public class DatePickerDialogBuilder {
         return this;
     }
 
+    public DatePickerDialogBuilder setCurrentDate(int year, int month, int day) {
+        if (isDateValid(year, month, day)) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+            mDialog.setSelectableDays(new Calendar[]{calendar});
+        }
+        return this;
+    }
+
     public DatePickerDialogBuilder setMinDate(int year, int month, int day) {
         if (isDateValid(year, month, day)) {
-            ensureDateRangeLimiter();
-            mRangerLimiter.setMinDate(year, month, day);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+            mDialog.setMinDate(calendar);
         }
         return this;
     }
 
     public DatePickerDialogBuilder setMaxDate(int year, int month, int day) {
         if (isDateValid(year, month, day)) {
-            ensureDateRangeLimiter();
-            mRangerLimiter.setMaxDate(year, month, day);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+            mDialog.setMaxDate(calendar);
         }
         return this;
     }
 
     public void show() {
         if (mContext != null && mFragmentManager != null) {
-//            mDialog = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
-//                @Override
-//                public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-//                    if (onDatePickListener != null) {
-//                        onDatePickListener.onPick(year, monthOfYear, dayOfMonth);
-//                    }
-//                    view.dismiss();
-//                }
-//            });
-            //DialogFactory.showDialog(mDialog, mFragmentManager, new Bundle(), DialogFactory.DATE_PICKER_DIALOG_NAME);
+
+
+            DialogFactory.showDialog(mDialog, mFragmentManager, new Bundle(), DialogFactory.DATE_PICKER_DIALOG_NAME);
         }
     }
 
-    private void ensureDateRangeLimiter() {
-        if (mRangerLimiter == null) {
-            mRangerLimiter = new DefaultDateRangerLimiter();
-        }
-    }
 
     private boolean isDateValid(int year, int month, int day) {
         return isYearValid(year) && isMonthValid(month)
