@@ -10,31 +10,30 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Parcel;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
+
 
 public class AppUpdater {
     private volatile static AppUpdater mInstance;
     private Application application;
     private ApkManager<DefaultAppUpdateInfo> mApkManager;
+    private OnDownloadApkListener<DefaultAppUpdateInfo> mOnDownloadListener;
+
 
     private AppUpdater(Application application) {
         this.application = application;
@@ -44,19 +43,21 @@ public class AppUpdater {
     public static AppUpdater getInstance(Context context) {
         if (mInstance == null) {
             synchronized (AppUpdater.class) {
-                mInstance = new AppUpdater((Application) context.getApplicationContext());
+                if (mInstance==null){
+                    mInstance = new AppUpdater((Application) context.getApplicationContext());
+                }
             }
         }
         return mInstance;
     }
 
     public void autoCheckVersion(LifecycleOwner lifecycleOwner, FragmentManager fragmentManager) {
-        new AutoCheckLifecycleObserver(lifecycleOwner, this, fragmentManager);
+        new AutoCheckVersionLifecycleObserver(lifecycleOwner, this, fragmentManager);
     }
 
 
-    public void checkVersion(LifecycleOwner lifecycleOwner, OnAppVersionCheckListener onAppVersionCheckListener) {
-
+    public void checkVersion(LifecycleOwner lifecycleOwner, OnAppVersionCheckListener<DefaultAppUpdateInfo> onAppVersionCheckListener) {
+        new CheckVersionLifecycleObserver(lifecycleOwner, this, onAppVersionCheckListener);
     }
 
     public boolean isDownloadingApk() {
@@ -86,24 +87,139 @@ public class AppUpdater {
             startIntent.setDataAndType(mApkManager.getUriForFile(appUpdateInfo), "application/vnd.android.package-archive");
             application.startActivity(startIntent);
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
 
     }
 
-    //TODO 显示
-    public void showUpdateDialog(DefaultAppUpdateInfo appUpdateInfo,
+    void startUpdateInBackground(final DefaultAppUpdateInfo updateInfo) {
+        File file = mApkManager.getDownloadApkFile(updateInfo);
+        if (file != null) {
+            install(updateInfo);
+        } else {
+            if (mOnDownloadListener == null) {
+                mOnDownloadListener = new OnDownloadApkListener<DefaultAppUpdateInfo>() {
+                    @Override
+                    public void onProgress(int progress) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(DownloadApkInfo<DefaultAppUpdateInfo> info) {
+                        install(updateInfo);
+                        unregisterDownloadApkListener(mOnDownloadListener);
+                        mOnDownloadListener = null;
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        unregisterDownloadApkListener(mOnDownloadListener);
+                        mOnDownloadListener = null;
+                    }
+
+                };
+                registerDownloadApkListener(mOnDownloadListener);
+                mApkManager.downloadApk(updateInfo);
+            }
+
+        }
+    }
+
+    public void showUpdateDialog(@Nullable DefaultAppUpdateInfo appUpdateInfo,
                                  FragmentManager fragmentManager) {
+        if (appUpdateInfo != null && appUpdateInfo.isUpdate()) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("appUpdateInfo", appUpdateInfo);
+           // DialogFactory.showDialog(new AppUpdateDialog(), fragmentManager, bundle, "AppUpdateDialog");
+        }
 
     }
 
-    private static class AutoCheckLifecycleObserver implements LifecycleObserver {
+    private static String getVersionName(@Nullable Context context) {
+        if (context == null) {
+            return "";
+        }
+        PackageInfo packageInfo = getPackageInfo(context);
+        if (packageInfo != null) {
+            return packageInfo.versionName;
+        } else {
+            return "";
+        }
+
+    }
+
+    @Nullable
+    private static PackageInfo getPackageInfo(@Nullable Context context) {
+        if (context == null) {
+            return null;
+        }
+        PackageInfo pi;
+        try {
+            PackageManager pm = context.getPackageManager();
+            pi = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_CONFIGURATIONS);
+        } catch (Exception e) {
+            return null;
+        }
+        return pi;
+    }
+
+
+    private static class CheckVersionLifecycleObserver implements LifecycleObserver {
+        private LifecycleOwner mLifecycleOwner;
+        private AppUpdateSession<DefaultAppUpdateInfo> mSession;
+        private AppUpdater mUpdater;
+        private OnAppVersionCheckListener<DefaultAppUpdateInfo> mListener;
+
+        private CheckVersionLifecycleObserver(LifecycleOwner lifecycleOwner,
+                                              AppUpdater updater,
+                                              OnAppVersionCheckListener<DefaultAppUpdateInfo> listener) {
+            this.mLifecycleOwner = lifecycleOwner;
+            this.mUpdater = updater;
+            mSession = mUpdater.openSession();
+            mListener = listener;
+            lifecycleOwner.getLifecycle().addObserver(this);
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        public void onResume(LifecycleOwner owner) {
+            if (!mSession.isCheckingVersion()) {
+                mSession.checkVersion(new OnAppVersionCheckListener<DefaultAppUpdateInfo>() {
+                    @Override
+                    public void onStart() {
+                        mListener.onStart();
+                    }
+
+                    @Override
+                    public void onSuccess(DefaultAppUpdateInfo data) {
+                        mListener.onSuccess(data);
+                        mSession.destroy();
+                        mLifecycleOwner.getLifecycle().removeObserver(CheckVersionLifecycleObserver.this);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e) {
+                        mListener.onFailure(e);
+                        mSession.destroy();
+                        mLifecycleOwner.getLifecycle().removeObserver(CheckVersionLifecycleObserver.this);
+                    }
+                });
+            }
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        public void onDestroy(LifecycleOwner owner) {
+            mSession.destroy();
+            mLifecycleOwner.getLifecycle().removeObserver(this);
+        }
+    }
+
+    private static class AutoCheckVersionLifecycleObserver implements LifecycleObserver {
         private LifecycleOwner mLifecycleOwner;
         private AppUpdateSession<DefaultAppUpdateInfo> mSession;
         private AppUpdater mUpdater;
         private FragmentManager mFragmentManager;
 
-        private AutoCheckLifecycleObserver(LifecycleOwner lifecycleOwner, AppUpdater updater, FragmentManager fragmentManager) {
+        private AutoCheckVersionLifecycleObserver(LifecycleOwner lifecycleOwner, AppUpdater updater, FragmentManager fragmentManager) {
             this.mLifecycleOwner = lifecycleOwner;
             lifecycleOwner.getLifecycle().addObserver(this);
             this.mUpdater = updater;
@@ -112,7 +228,7 @@ public class AppUpdater {
         }
 
         @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        public void onResume() {
+        public void onResume(LifecycleOwner owner) {
             if (!mSession.isCheckingVersion()) {
                 mSession.checkVersion(new OnAppVersionCheckListener<DefaultAppUpdateInfo>() {
                     @Override
@@ -123,30 +239,59 @@ public class AppUpdater {
                     @Override
                     public void onSuccess(DefaultAppUpdateInfo data) {
                         mUpdater.showUpdateDialog(data, mFragmentManager);
+                        mSession.destroy();
+                        mLifecycleOwner.getLifecycle().removeObserver(AutoCheckVersionLifecycleObserver.this);
                     }
 
                     @Override
                     public void onFailure(Throwable e) {
-
+                        mSession.destroy();
+                        mLifecycleOwner.getLifecycle().removeObserver(AutoCheckVersionLifecycleObserver.this);
                     }
                 });
             }
         }
 
         @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        public void onDestroy() {
+        public void onDestroy(LifecycleOwner owner) {
             mSession.destroy();
             mLifecycleOwner.getLifecycle().removeObserver(this);
         }
     }
-
 
     private static class DefaultApkManager implements ApkManager<DefaultAppUpdateInfo> {
         private Context mContext;
         private Long taskId;
         private DownloadManager mDownloadManager;
         private List<OnDownloadApkListener<DefaultAppUpdateInfo>> onDownloadApkListenerList = new ArrayList<>();
+        private Handler mHandler = new Handler();
+        private int mProgressing = -1;
+        private Runnable mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (taskId != null) {
+                    DownloadManager.Query query = new DownloadManager.Query().setFilterById(taskId);
+                    Cursor c = mDownloadManager.query(query);
+                    if (c.moveToFirst()) {
+                        int downloadBytesIdx = c.getColumnIndexOrThrow(
+                                DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                        int totalBytesIdx = c.getColumnIndexOrThrow(
+                                DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                        long totalBytes = c.getLong(totalBytesIdx);
+                        long downloadBytes = c.getLong(downloadBytesIdx);
+                        int percent = (int) (downloadBytes * 100 / totalBytes);
+                        if (percent < 100) {
+                            onProgress(percent);
+                            mHandler.postDelayed(this, 500);
+                        } else {
+                            mHandler.removeCallbacks(this);
+                        }
+                    }
+                }
 
+
+            }
+        };
 
         DefaultApkManager(Context context) {
             this.mContext = context.getApplicationContext();
@@ -183,17 +328,18 @@ public class AppUpdater {
                         Uri uri = Uri.parse(info.getApkUrl());
                         DownloadManager.Request request = new DownloadManager.Request(uri);
                         // request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-                        request.setTitle("别买了更新");
+                        request.setTitle("音乐圣经");
                         request.setDescription("");
                         request.setMimeType("application/vnd.android.package-archive");
                         request.setAllowedOverRoaming(false);
                         request.setVisibleInDownloadsUi(true);
                         request.setDestinationInExternalFilesDir(mContext, Environment.DIRECTORY_DOWNLOADS, targetSubFile(info));
                         taskId = mDownloadManager.enqueue(request);
-
                         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
                         filter.addAction("android.intent.action.VIEW_DOWNLOADS");
                         mContext.registerReceiver(new DefaultApkManager.DownloadReceiver(info), filter);
+                        onProgress(0);
+                        mHandler.postDelayed(mRunnable, 500);
                     }
                 } catch (Exception e) {
                     onFailure(e);
@@ -218,7 +364,7 @@ public class AppUpdater {
         }
 
         private String createApkFileName(DefaultAppUpdateInfo appUpdateInfo) {
-            return "musicbible_" + appUpdateInfo.getLastUpdate();
+            return "musicbible_" + appUpdateInfo.getNewestVersion();
         }
 
         private String targetSubFile(DefaultAppUpdateInfo appUpdateInfo) {
@@ -227,7 +373,7 @@ public class AppUpdater {
 
         private Uri getUriForFile(File file) {
             //获取当前app的包名
-            String FPAuth = mContext.getPackageName() + ".fileProvider";
+            String FPAuth = mContext.getPackageName() + ".fileprovider";
             Uri uri;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 uri = FileProvider.getUriForFile(mContext, FPAuth, file);
@@ -255,6 +401,13 @@ public class AppUpdater {
             }
             taskId = null;
 
+        }
+
+        private void onProgress(int progress) {
+            this.mProgressing = progress;
+            for (OnDownloadApkListener<DefaultAppUpdateInfo> onDownloadApkListener : onDownloadApkListenerList) {
+                onDownloadApkListener.onProgress(progress);
+            }
         }
 
         private void onFailure(Exception e) {
@@ -288,23 +441,14 @@ public class AppUpdater {
 
     public static class DefaultAppUpdateInfo implements AppUpdateInfo {
         private String apkUrl;
-        private String lastUpdate;
+        private String minVersion;
+        private String newestVersion;
+        private String updateDescription;
+        private String currentVersion;
+        private boolean isUpdate = false;
 
+        public DefaultAppUpdateInfo() {
 
-        public String getApkUrl() {
-            return apkUrl;
-        }
-
-        public void setApkUrl(String apkUrl) {
-            this.apkUrl = apkUrl;
-        }
-
-        public String getLastUpdate() {
-            return lastUpdate;
-        }
-
-        public void setLastUpdate(String lastUpdate) {
-            this.lastUpdate = lastUpdate;
         }
 
         @Override
@@ -315,15 +459,21 @@ public class AppUpdater {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.apkUrl);
-            dest.writeString(this.lastUpdate);
+            dest.writeString(this.minVersion);
+            dest.writeString(this.newestVersion);
+            dest.writeString(this.updateDescription);
+            dest.writeString(this.currentVersion);
+            dest.writeInt(this.isUpdate ? 0 : 1);
         }
 
-        public DefaultAppUpdateInfo() {
-        }
 
         protected DefaultAppUpdateInfo(Parcel in) {
             this.apkUrl = in.readString();
-            this.lastUpdate = in.readString();
+            this.minVersion = in.readString();
+            this.newestVersion = in.readString();
+            this.updateDescription = in.readString();
+            this.currentVersion = in.readString();
+            this.isUpdate = in.readInt() == 1;
         }
 
         public static final Creator<DefaultAppUpdateInfo> CREATOR = new Creator<DefaultAppUpdateInfo>() {
@@ -337,6 +487,26 @@ public class AppUpdater {
                 return new DefaultAppUpdateInfo[size];
             }
         };
+
+        public boolean isUpdate() {
+            return isUpdate;
+        }
+
+        public boolean isForceUpdate() {
+            return false;
+        }
+
+        public String getUpdateDescription() {
+            return updateDescription;
+        }
+
+        public String getNewestVersion() {
+            return newestVersion;
+        }
+
+        public String getApkUrl() {
+            return apkUrl;
+        }
     }
 
     private static class DefaultAppUpdateSession implements AppUpdateSession<DefaultAppUpdateInfo> {
@@ -344,7 +514,7 @@ public class AppUpdater {
         private boolean isChecking;
         private Disposable mDisposable;
         private OnAppVersionCheckListener<DefaultAppUpdateInfo> mListener;
-
+        //private RemoteV2AppRepository mRemoteAppRepository;
         private OnDownloadApkListener<DefaultAppUpdateInfo> mDownloadListener = new OnDownloadApkListener<DefaultAppUpdateInfo>() {
 
             @Override
@@ -370,6 +540,7 @@ public class AppUpdater {
         DefaultAppUpdateSession(AppUpdater appUpdater) {
             this.mAppUpdater = appUpdater;
             mAppUpdater.registerDownloadApkListener(mDownloadListener);
+          //  mRemoteAppRepository = RepositoryV2FactoryClient.getRemoteRepositoryFactory(appUpdater.application).appRepository();
         }
 
         @Override
@@ -381,42 +552,33 @@ public class AppUpdater {
                     listener.onFailure(new IllegalStateException());
                     isChecking = false;
                 } else {
-                    Observable.timer(5000, TimeUnit.MILLISECONDS)
-                            .flatMap(new Function<Long, ObservableSource<DefaultAppUpdateInfo>>() {
-                                @Override
-                                public ObservableSource<DefaultAppUpdateInfo> apply(Long aLong) throws Exception {
-                                    DefaultAppUpdateInfo defaultAppUpdateInfo = new DefaultAppUpdateInfo();
-                                    return Observable.just(defaultAppUpdateInfo);
-                                }
-                            })
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<DefaultAppUpdateInfo>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
-                                    mDisposable = d;
-                                    listener.onStart();
-                                }
-
-                                @Override
-                                public void onNext(DefaultAppUpdateInfo info) {
-                                    listener.onSuccess(info);
-                                    isChecking = false;
-                                    mDisposable = null;
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    listener.onFailure(e);
-                                    isChecking = false;
-                                    mDisposable = null;
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
+//                    checkUpdateObservable(mRemoteAppRepository, mAppUpdater.application)
+//                            .subscribe(new Observer<DefaultAppUpdateInfo>() {
+//                                @Override
+//                                public void onSubscribe(Disposable d) {
+//                                    mDisposable = d;
+//                                    listener.onStart();
+//                                }
+//
+//                                @Override
+//                                public void onNext(DefaultAppUpdateInfo info) {
+//                                    listener.onSuccess(info);
+//                                    isChecking = false;
+//                                    mDisposable = null;
+//                                }
+//
+//                                @Override
+//                                public void onError(Throwable e) {
+//                                    listener.onFailure(e);
+//                                    isChecking = false;
+//                                    mDisposable = null;
+//                                }
+//
+//                                @Override
+//                                public void onComplete() {
+//
+//                                }
+//                            });
                 }
             }
         }
