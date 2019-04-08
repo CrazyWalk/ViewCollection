@@ -1,41 +1,80 @@
 package org.luyinbros.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DispatcherFragmentActivityDelegate {
-    private FragmentActivity activity;
-    private FragmentManager mFragmentManager;
-    private final int contentId;
-    private Map<Class, FragmentInfo> mMap = new HashMap<>();
+import me.yokeyword.fragmentation.ISupportActivity;
 
-    public DispatcherFragmentActivityDelegate(FragmentActivity activity) {
-        this.activity = activity;
-        mFragmentManager = activity.getSupportFragmentManager();
+public class DispatcherFragmentActivityDelegate {
+    private FragmentActivity mActivity;
+    private final int contentId;
+
+    public DispatcherFragmentActivityDelegate(DispatcherFragmentActivity activity) {
+        this.mActivity = (FragmentActivity) activity;
         contentId = android.R.id.content;
     }
 
-    public void registerFragmentInfo(FragmentInfo fragmentInfo) {
-        mMap.put(fragmentInfo.getFragmentClass(), fragmentInfo);
+    public void navigate(FragmentIntent intent) {
+
     }
 
-    public void navigate(Class fragmentClass, Bundle bundle) {
-        FragmentInfo fragmentInfo = mMap.get(fragmentClass);
-        if (fragmentInfo != null) {
-            Fragment fragment = fragmentInfo.getFragment();
-            mFragmentManager.
-                    beginTransaction()
-                    .add(android.R.id.content, fragment, fragmentInfo.getName())
-                    .show(fragment)
-                    .commitNow();
-        }
+    public void navigate(FragmentIntent intent, int requestCode) {
+
+    }
+
+    public void finish(Fragment fragment) {
+
+    }
+
+    public boolean onBackPressed() {
+        return true;
+    }
+
+
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return false;
+    }
+
+
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+
+    }
+
+    public void onStart() {
+
+    }
+
+    public void onResume() {
+
+    }
+
+    public void onPause() {
+
+    }
+
+    public void onStop() {
+
+    }
+
+    public void onDestroy() {
+
+    }
+
+    public void onRestart() {
+
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+
     }
 
 

@@ -77,8 +77,6 @@ public class DatePickerDialogBuilder {
 
     public void show() {
         if (mContext != null && mFragmentManager != null) {
-
-
             DialogFactory.showDialog(mDialog, mFragmentManager, new Bundle(), DialogFactory.DATE_PICKER_DIALOG_NAME);
         }
     }
