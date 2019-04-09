@@ -21,6 +21,9 @@ allprojects {
         maven {
             url "https://dl.bintray.com/rainyeveningstreet/OwlClaw"
         }
+        maven{
+            url "https://jitpack.io"
+        }
     }
 }
 

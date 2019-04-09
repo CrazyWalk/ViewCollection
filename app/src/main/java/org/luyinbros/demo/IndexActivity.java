@@ -75,6 +75,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), PopupWindowActivity.class);
                     }
+                }),
+                new IndexItem("富文本", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), RichEditActivity.class);
+                    }
                 })
         };
 
