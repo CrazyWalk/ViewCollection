@@ -27,9 +27,9 @@ public class UIWindow {
         }
     }
 
-    public static void immersive(@Nullable Activity activity) {
-        if (isStatusBarAdaptive() && activity != null) {
-            Window window = activity.getWindow();
+    public static void immersive(@Nullable Context context) {
+        if (isStatusBarAdaptive() && context instanceof Activity) {
+            Window window = ((Activity)context).getWindow();
             if (window != null) {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                 window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -42,9 +42,9 @@ public class UIWindow {
 
     }
 
-    public static void darkImmersive(@Nullable Activity activity) {
-        if (isStatusBarAdaptive() && activity != null) {
-            Window window = activity.getWindow();
+    public static void darkImmersive(@Nullable Context context) {
+        if (isStatusBarAdaptive() && context instanceof Activity) {
+            Window window = ((Activity)context).getWindow();
             if (window != null) {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                 window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -53,7 +53,7 @@ public class UIWindow {
                 window.setStatusBarColor(Color.TRANSPARENT);
             }
         } else {
-            immersive(activity);
+            immersive(context);
         }
 
     }

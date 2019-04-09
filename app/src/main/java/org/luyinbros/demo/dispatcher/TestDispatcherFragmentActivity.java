@@ -6,18 +6,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 
 
+import org.luyinbros.demo.dispatcher.home.HomeFragment;
 import org.luyinbros.fragment.DispatcherFragmentActivity;
 import org.luyinbros.fragment.DispatcherFragmentActivityDelegate;
-
+import org.luyinbros.fragment.DispatcherFragmentManifest;
+import org.luyinbros.fragment.DispatcherFragmentManifest.*;
+import org.luyinbros.fragment.FragmentIntent;
 
 public class TestDispatcherFragmentActivity extends AppCompatActivity implements DispatcherFragmentActivity {
-    private DispatcherFragmentActivityDelegate mDelegate = new DispatcherFragmentActivityDelegate(this);
+    private DispatcherFragmentActivityDelegate mDelegate;
+    private DispatcherFragmentManifest dispatcherFragmentManifest;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initManifest();
+        mDelegate = new DispatcherFragmentActivityDelegate(this, dispatcherFragmentManifest);
         mDelegate.onCreate(savedInstanceState);
 
+    }
+
+    private void initManifest() {
+        dispatcherFragmentManifest = new DispatcherFragmentManifest();
+        dispatcherFragmentManifest.setLauncherFragmentInfo(FragmentInfo.create(HomeFragment.class));
     }
 
     @Override
@@ -82,5 +93,6 @@ public class TestDispatcherFragmentActivity extends AppCompatActivity implements
         super.onRestart();
         mDelegate.onRestart();
     }
+
 
 }

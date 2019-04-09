@@ -69,6 +69,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), TestDispatcherFragmentActivity.class);
                     }
+                }),
+                new IndexItem("Popup View使用及View生命周期", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), PopupWindowActivity.class);
+                    }
                 })
         };
 
