@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="org.luyinbros.widget">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:appComponentFactory="任意字符"
@@ -29,7 +30,7 @@
         <activity android:name="org.luyinbros.demo.SimpleListViewActivity" />
         <activity android:name="org.luyinbros.demo.A2ZActivity" />
         <activity android:name="org.luyinbros.demo.dispatcher.TestDispatcherFragmentActivity" />
-        <activity android:name="org.luyinbros.demo.RichEditActivity"/>
+        <activity android:name="org.luyinbros.demo.RichEditActivity" />
     </application>
 
 </manifest>

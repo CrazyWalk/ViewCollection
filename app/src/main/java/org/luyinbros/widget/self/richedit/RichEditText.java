@@ -1,30 +1,23 @@
 package org.luyinbros.widget.self.richedit;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
-import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.CharacterStyle;
 import android.text.style.ImageSpan;
-import android.text.style.ParagraphStyle;
 import android.util.AttributeSet;
 import android.util.Log;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +25,7 @@ import java.util.List;
  */
 public class RichEditText extends AppCompatEditText implements RichEditController {
     private static final String TAG = "RichEditText";
+    private HtmlEditableDelegate mHtmlDelegate;
 
     public RichEditText(Context context) {
         super(context);
@@ -50,84 +44,29 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
+        mHtmlDelegate = new HtmlEditableDelegate(this);
+    }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        addTextChangedListener(mHtmlDelegate);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        removeTextChangedListener(mHtmlDelegate);
     }
 
     @Override
     public String toHtml() {
-        Editable editable = getEditableText();
-        int next;
-        final int editLength = editable.length();
-        if (editLength > 0) {
-            StringBuilder textBuilder = new StringBuilder();
-            for (int i = 0; i < editLength; i = next) {
-                next = editable.nextSpanTransition(i, editLength, ImageSpan.class);
-                ImageSpan[] imageSpanArray = editable.getSpans(i, next, ImageSpan.class);
-                Log.d(TAG, "toHtml: " + Arrays.toString(imageSpanArray));
-                Log.d(TAG, "toHtml: " + i + "  " + next);
-                if (imageSpanArray.length != 0) {
-                    for (int imageIndex = 0; imageIndex < imageSpanArray.length; imageIndex++) {
-                        textBuilder.append("<image src=\"")
-                                .append(imageSpanArray[imageIndex].getSource())
-                                .append("\"/>");
-                    }
-
-                } else {
-                    withContent(textBuilder, editable.subSequence(i, next));
-                }
-            }
-            Log.d(TAG, "toHtml: " + textBuilder.toString());
-            return textBuilder.toString();
-        }
-
-        return "";
-    }
-
-    private void withContent(StringBuilder textBuilder, CharSequence text) {
-        final int textLength = text.length();
-        if (textLength != 0) {
-            char c;
-            char lc;
-            char rc;
-            boolean pComplete = true;
-            c = text.charAt(0);
-            if (c != '\n') {
-                pComplete = false;
-                textBuilder.append("#");
-            }
-
-            for (int j = 0; j < textLength; j++) {
-                c = text.charAt(j);
-                if (c == '\n') {
-                    textBuilder.append("#");
-                } else {
-                    if (pComplete) {
-                        textBuilder.append("#");
-                        pComplete = false;
-                    }
-                    if (c == '<') {
-                        textBuilder.append("&lt;");
-                    } else if (c == '>') {
-                        textBuilder.append("&gt;");
-                    } else {
-                        textBuilder.append(c);
-                    }
-                }
-            }
-
-            if (textLength > 1) {
-                c = text.charAt(textLength - 1);
-                if (c != '\n') {
-                    textBuilder.append("#");
-                }
-            }
-        }
-
+        return mHtmlDelegate.toHtml();
     }
 
     @Override
     public void loadHtml(String html) {
-
+        mHtmlDelegate.loadHtml(html);
     }
 
     @Override
@@ -139,16 +78,18 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                 BitmapFactory.decodeFile(file.getAbsolutePath(), options);
                 if (options.outWidth > 0 && options.outHeight > 0) {
                     final int pictureWidth = Math.min(options.outWidth, getMeasuredWidth());
-                    final int pictureHeight = options.outHeight;
+                    final int pictureHeight = Math.min(options.outHeight, 200);
 
                     options.inJustDecodeBounds = false;
                     options.outWidth = pictureWidth;
                     options.outHeight = pictureHeight;
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
                     if (bitmap != null) {
+                        bitmap.setHeight(pictureHeight);
+                        bitmap.setWidth(pictureWidth);
                         Drawable drawable = new BitmapDrawable(getResources(), bitmap);
                         drawable.setBounds(0, 0, pictureWidth, pictureHeight);
-                        insertDrawable(drawable, file.getAbsolutePath());
+                        insertDrawable(drawable, "filePath://" + file.getAbsolutePath());
                     }
                 }
 
@@ -167,16 +108,17 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                 BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri), null, options);
                 if (options.outWidth > 0 && options.outHeight > 0) {
                     final int pictureWidth = Math.min(options.outWidth, getMeasuredWidth());
-                    final int pictureHeight = options.outHeight;
+                    final int pictureHeight = Math.min(options.outHeight, 200);
 
                     options.inJustDecodeBounds = false;
                     options.outWidth = pictureWidth;
                     options.outHeight = pictureHeight;
+
                     Bitmap bitmap = BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri), null, options);
                     if (bitmap != null) {
                         Drawable drawable = new BitmapDrawable(getResources(), bitmap);
                         drawable.setBounds(0, 0, pictureWidth, pictureHeight);
-                        insertDrawable(drawable,uri.toString());
+                        insertDrawable(drawable, uri.toString());
                     }
                 }
 
@@ -208,7 +150,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                 startIndex = cursorPosition + 1;
                 endIndex = startIndex + 1;
             }
-            editable.setSpan(new ImageSpan(drawable, src), startIndex, endIndex, ImageSpan.ALIGN_BASELINE);
+            editable.setSpan(new InnerImageSpan(drawable, src), startIndex, endIndex, ImageSpan.ALIGN_BASELINE);
             editable.insert(endIndex, "\n");
             setSelection(++endIndex);
         }
@@ -236,6 +178,126 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             return cursorPosition;
         } else {
             return -1;
+        }
+    }
+
+    private static class InnerImageSpan extends ImageSpan {
+        private Drawable mDrawable;
+        private String mSource;
+
+        private InnerImageSpan(@NonNull Drawable drawable, String source) {
+            super(drawable);
+            mDrawable = drawable;
+            this.mSource = source;
+        }
+
+        @Override
+        public Drawable getDrawable() {
+            Drawable drawable = null;
+            if (mDrawable != null) {
+                drawable = mDrawable;
+            }
+            return drawable;
+        }
+
+        @Nullable
+        @Override
+        public String getSource() {
+            return mSource;
+        }
+    }
+
+    private static class HtmlEditableDelegate implements TextWatcher {
+        private List<Span> spans;
+        private RichEditText richEditText;
+
+        public HtmlEditableDelegate(RichEditText richEditText) {
+            this.richEditText = richEditText;
+        }
+
+        private Editable getEditableText() {
+            return richEditText.getEditableText();
+        }
+
+        public String toHtml() {
+            Editable editable = getEditableText();
+            spans = new ArrayList<>();
+            int next;
+            final int editLength = editable.length();
+            if (editLength > 0) {
+                for (int i = 0; i < editLength; i = next) {
+                    next = editable.nextSpanTransition(i, editLength, CharacterStyle.class);
+                    CharacterStyle[] characterStyles = editable.getSpans(i, next, CharacterStyle.class);
+                    if (characterStyles.length == 0) {
+                        spans.add(new Span(Span.TEXT, i, next));
+                    } else {
+                        for (CharacterStyle characterStyle : characterStyles) {
+                            spans.add(new Span(characterStyle,
+                                    editable.getSpanStart(characterStyle),
+                                    editable.getSpanEnd(characterStyle)));
+                        }
+                    }
+                }
+                Span $span;
+                for (int i = 0; i < spans.size(); i++) {
+                    $span = spans.get(i);
+                    if ($span.span == Span.TEXT) {
+
+                    }
+                }
+
+            }
+
+            return "";
+        }
+
+        private Span next(int current) {
+            if (spans == null) {
+                return null;
+            }
+            if (current < spans.size() - 1) {
+                return spans.get(current + 1);
+            } else {
+                return null;
+            }
+        }
+
+        public void loadHtml(String html) {
+
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            Log.d(TAG, "beforeTextChanged: " + start + " " + after + " " + count);
+            if (count != 0) {
+                InnerImageSpan[] imageSpans = getEditableText().getSpans(start, start + count, InnerImageSpan.class);
+                for (InnerImageSpan imageSpan : imageSpans) {
+                    getEditableText().removeSpan(imageSpan);
+                }
+            }
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            Log.d(TAG, "onTextChanged: " + start + " " + before + " " + count);
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            Log.d(TAG, "afterTextChanged: ");
+        }
+
+        private static class Span {
+            private static final Object TEXT = new Object();
+            public Object span;
+            public int start;
+            public int end;
+
+            public Span(Object span, int start, int end) {
+                this.span = span;
+                this.start = start;
+                this.end = end;
+            }
         }
     }
 }
