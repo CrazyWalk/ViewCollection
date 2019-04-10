@@ -4,10 +4,32 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <org.luyinbros.widget.self.richedit.RichEditText
+    <LinearLayout
         android:layout_width="match_parent"
-        android:inputType="textMultiLine"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/insertPictureButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="插入一张图片" />
+        <Button
+            android:id="@+id/printHtmlButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="输出html"/>
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/insertPictureImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <org.luyinbros.widget.self.richedit.RichEditText
+        android:id="@+id/richEditText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#37FFC1"
         android:gravity="start"
-        android:background="@color/colorPrimary"
-        android:layout_height="200dp" />
+        android:inputType="textMultiLine" />
 </LinearLayout>
