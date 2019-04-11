@@ -30,17 +30,23 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#37FFC1">
+        android:background="#37FFC1"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <org.luyinbros.widget.self.richedit.RichEditText
             android:id="@+id/richEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
             android:background="@null"
             android:gravity="start"
-            android:inputType="textMultiLine" />
+            android:minHeight="320dp"
+            android:inputType="textMultiLine"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+             />
     </ScrollView>
 
 </LinearLayout>

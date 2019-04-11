@@ -17,6 +17,8 @@ import android.text.style.ImageSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import org.luyinbros.widget.R;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,25 +29,34 @@ import java.util.List;
 public class RichEditText extends AppCompatEditText implements RichEditController {
     private static final String TAG = "RichEditText";
     private HtmlEditableDelegate mHtmlDelegate;
+    private Bitmap deleteBitmap;
+    private final int rectInterval;
+    private static final char CHAR_LINE = '\n';
+    private static final char CHAR_PICTURE_SPACE = 'ⓔ';
 
     public RichEditText(Context context) {
         super(context);
+        rectInterval = 4;
         init(null);
     }
 
     public RichEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
+        rectInterval = 4;
         init(attrs);
     }
 
     public RichEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        rectInterval = 4;
         init(attrs);
 
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
         mHtmlDelegate = new HtmlEditableDelegate(this);
+        deleteBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_picture_del);
+
     }
 
     @Override
@@ -58,6 +69,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         removeTextChangedListener(mHtmlDelegate);
+        deleteBitmap.recycle();
     }
 
     @Override
@@ -79,8 +91,11 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
     public void insertPicture(@Nullable File file, @Nullable String url) {
         if (getCursorPosition() != -1 && file != null && file.exists() && file.isFile()) {
             try {
-                Drawable drawable = outputDrawable(BitmapFactory.decodeFile(file.getAbsolutePath(), getBitmapOption()));
-                if (drawable!=null){
+                BitmapFactory.Options sizeOptions = createSizeOption();
+                BitmapFactory.decodeFile(file.getAbsolutePath(), sizeOptions);
+                fitOption(sizeOptions);
+                Drawable drawable = outputDrawable(BitmapFactory.decodeFile(file.getAbsolutePath(), sizeOptions));
+                if (drawable != null) {
                     insertDrawable(drawable, "filePath://" + file.getAbsolutePath(), url);
                 }
             } catch (Exception e) {
@@ -98,8 +113,11 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
     public void insertPicture(@Nullable Uri uri, @Nullable String url) {
         if (getCursorPosition() != -1 && uri != null) {
             try {
-                Drawable drawable = outputDrawable(BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri), null, getBitmapOption()));
-                if (drawable!=null){
+                BitmapFactory.Options sizeOptions = createSizeOption();
+                BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri), null, sizeOptions);
+                fitOption(sizeOptions);
+                Drawable drawable = outputDrawable(BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri), null, sizeOptions));
+                if (drawable != null) {
                     insertDrawable(drawable, uri.toString(), url);
                 }
             } catch (Exception e) {
@@ -113,8 +131,39 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
         super.onSelectionChanged(selStart, selEnd);
     }
 
-    private BitmapFactory.Options getBitmapOption() {
-        return new BitmapFactory.Options();
+    private BitmapFactory.Options createSizeOption() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        return options;
+    }
+
+
+    private void fitOption(BitmapFactory.Options sizeOptions) {
+        final int srcWidth = sizeOptions.outWidth;
+        final int srcHeight = sizeOptions.outHeight;
+        final int parentWidth = getMaxPictureWidth();
+        sizeOptions.inJustDecodeBounds = false;
+        if (srcWidth > parentWidth && srcHeight > parentWidth) {
+            int inSampleSize = 1;
+            if (srcWidth <= srcHeight) {
+                final int halfWidth = srcWidth >> 1;
+                while ((halfWidth / inSampleSize) > parentWidth) {
+                    inSampleSize <<= inSampleSize;
+                    sizeOptions.outWidth = sizeOptions.outWidth >> 1;
+                    sizeOptions.outHeight = sizeOptions.outHeight >> 1;
+                }
+
+            } else {
+                final int halfHeight = srcHeight >> 1;
+                while ((halfHeight / inSampleSize) > parentWidth) {
+                    inSampleSize = inSampleSize << 1;
+                    sizeOptions.outWidth = sizeOptions.outWidth >> 1;
+                    sizeOptions.outHeight = sizeOptions.outHeight >> 1;
+                }
+            }
+            sizeOptions.inSampleSize = inSampleSize;
+            sizeOptions.inScaled = true;
+        }
     }
 
     private Drawable outputDrawable(Bitmap src) {
@@ -123,66 +172,66 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
         }
         final int srcWidth = src.getWidth();
         final int srcHeight = src.getHeight();
-        final int parentWidth = getMeasuredWidth();
-
+        final int parentWidth = getMaxPictureWidth();
+        Bitmap completeBitmap;
         if (srcWidth <= parentWidth) {
-            Drawable drawable = new BitmapDrawable(getResources(), src);
-            drawable.setBounds(0, 0, srcWidth, srcHeight);
-            return drawable;
+            completeBitmap = src;
         } else if (srcHeight <= parentWidth) {
-            Matrix matrix = new Matrix();
-            matrix.setRotate(90);
-            // 围绕原地进行旋转
-            Bitmap newBitmap = Bitmap.createBitmap(src, 0, 0, srcWidth, srcHeight, matrix, false);
-            Drawable drawable = new BitmapDrawable(getResources(), newBitmap);
-            drawable.setBounds(0, 0, newBitmap.getWidth(), newBitmap.getHeight());
-            if (!newBitmap.equals(src)) {
+            Matrix rotateMatrix = new Matrix();
+            rotateMatrix.setRotate(90f, srcWidth / 2.0f, srcHeight / 2.0f);
+            Bitmap rotateBitmap = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), rotateMatrix, true);
+            if (rotateBitmap != src) {
                 src.recycle();
             }
-            return drawable;
+            completeBitmap = rotateBitmap;
         } else {
             if (srcWidth <= srcHeight) {
                 Matrix matrix = new Matrix();
                 float scale = 1.0f * parentWidth / srcWidth;
                 matrix.postScale(scale, scale);
                 Bitmap newBitmap = Bitmap.createBitmap(src, 0, 0, srcWidth, srcHeight, matrix, false);
-                Drawable drawable = new BitmapDrawable(getResources(), newBitmap);
-                drawable.setBounds(0, 0, newBitmap.getWidth(), newBitmap.getHeight());
-                if (!newBitmap.equals(src)) {
+                if (newBitmap != src) {
                     src.recycle();
                 }
-                return drawable;
+                completeBitmap = newBitmap;
             } else {
-                Matrix matrix = new Matrix();
+                Matrix scaleMatrix = new Matrix();
                 float scale = 1.0f * parentWidth / srcHeight;
-                matrix.postScale(scale, scale);
-
-                matrix.setRotate(90);
-                Bitmap newBitmap = Bitmap.createBitmap(src, 0, 0, srcWidth, srcHeight, matrix, false);
-                newBitmap.setWidth((int) (srcHeight*scale));
-                newBitmap.setHeight((int) (srcWidth*scale));
-                Drawable drawable = new BitmapDrawable(getResources(), newBitmap);
-                drawable.setBounds(0, 0, newBitmap.getWidth(), newBitmap.getHeight());
-                if (!newBitmap.equals(src)) {
+                scaleMatrix.postScale(scale, scale);
+                Bitmap scaleBitmap = Bitmap.createBitmap(src, 0, 0, srcWidth, srcHeight, scaleMatrix, true);
+                if (scaleBitmap != src) {
                     src.recycle();
                 }
-                return drawable;
+                Matrix rotateMatrix = new Matrix();
+                rotateMatrix.setRotate(90f, srcWidth / 2.0f, srcHeight / 2.0f);
+                Bitmap rotateBitmap = Bitmap.createBitmap(scaleBitmap, 0, 0, scaleBitmap.getWidth(), scaleBitmap.getHeight(), rotateMatrix, true);
+                if (rotateBitmap != scaleBitmap) {
+                    scaleBitmap.recycle();
+
+                }
+                completeBitmap = rotateBitmap;
             }
         }
+        return wrapperDrawable(completeBitmap);
     }
 
-    private void outputPictureSize(BitmapFactory.Options options) {
-        final int parentWidth = getMeasuredWidth();
-        if (options.outWidth <= parentWidth) {
-            return;
-        }
-        if (options.outHeight <= parentWidth) {
-            return;
-        }
-
-        final int srcWith = options.outWidth;
-
+    private Drawable wrapperDrawable(Bitmap bitmap) {
+//        Bitmap resultBitmap = Bitmap.createBitmap(
+//                getMeasuredWidth() - getPaddingLeft() - getPaddingRight(),
+//                bitmap.getHeight() + rectInterval * 2,
+//                Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(resultBitmap);
+//        if (rectInterval != 0) {
+//            canvas.drawColor(Color.BLACK);
+//        }
+//        canvas.drawBitmap(bitmap, rectInterval, rectInterval, null);
+        // canvas.drawBitmap(deleteBitmap, resultBitmap.getWidth() - deleteBitmap.getWidth() / 2.0f,0, null);
+        BitmapDrawable drawable = new BitmapDrawable(getResources(), bitmap);
+        drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        //bitmap.recycle();
+        return drawable;
     }
+
 
     private void insertDrawable(Drawable drawable, String src, String url) {
         final int cursorPosition = getCursorPosition();
@@ -190,22 +239,23 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             int startIndex;
             int endIndex;
             Editable editable = getEditableText();
-            if (cursorPosition == 0 || isCharEqual(editable, cursorPosition, '\n')) {
-                editable.insert(cursorPosition, " ");
+            if (cursorPosition == 0 || isCharEqual(editable, cursorPosition, CHAR_LINE)) {
+                editable.insert(cursorPosition, CHAR_PICTURE_SPACE + "");
                 startIndex = cursorPosition;
                 endIndex = startIndex + 1;
             } else {
-                editable.insert(cursorPosition, "\n ");
+                editable.insert(cursorPosition, CHAR_LINE + "" + CHAR_PICTURE_SPACE);
                 startIndex = cursorPosition + 1;
                 endIndex = startIndex + 1;
             }
+            //TODO 去掉注释
             editable.setSpan(new InnerImageSpan(drawable, src, url), startIndex, endIndex, ImageSpan.ALIGN_BASELINE);
             if (endIndex + 1 < editable.length()) {
-                if (editable.charAt(endIndex + 1) != '\n') {
-                    editable.insert(endIndex, "\n");
+                if (editable.charAt(endIndex + 1) != CHAR_LINE) {
+                    editable.insert(endIndex, CHAR_LINE + "");
                 }
             } else {
-                editable.insert(endIndex, "\n");
+                editable.insert(endIndex, CHAR_LINE + "");
             }
             setSelection(++endIndex);
         }
@@ -235,6 +285,11 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             return -1;
         }
     }
+
+    private int getMaxPictureWidth() {
+        return getMeasuredWidth() - rectInterval * 2 - getPaddingLeft() - getPaddingRight();
+    }
+
 
     private static class InnerImageSpan extends ImageSpan {
         private Drawable mDrawable;
@@ -267,6 +322,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             return url;
         }
     }
+
 
     private static class HtmlEditableDelegate implements TextWatcher {
         private List<Span> spans;
@@ -321,7 +377,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                                 if ($preSpan != null) {
                                     if ($preSpan.span instanceof InnerImageSpan) {
                                         $char = editable.charAt(start);
-                                        if ($char == '\n') {
+                                        if ($char == CHAR_LINE) {
                                             start++;
                                         }
                                     }
@@ -329,7 +385,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                                 if ($nextSpan != null) {
                                     if ($nextSpan.span instanceof InnerImageSpan) {
                                         $char = editable.charAt(end);
-                                        if ($char == '\n') {
+                                        if ($char == CHAR_LINE) {
                                             end--;
                                         }
                                     }
@@ -381,7 +437,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             }
             int startIndex = 0;
             boolean isPClose = true;
-            if (content.charAt(startIndex) != '\n') {
+            if (content.charAt(startIndex) != CHAR_LINE) {
                 sb.append("<p>");
                 isPClose = false;
             } else {
@@ -390,10 +446,10 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             char $char;
             for (int cI = startIndex; cI < length; cI++) {
                 $char = content.charAt(cI);
-                if ($char == '\n') {
+                if ($char == CHAR_LINE) {
                     if (isPClose) {
                         if (cI > 0 && cI < length - 1) {
-                            if (content.charAt(cI - 1) == '\n' && content.charAt(cI + 1) == '\n') {
+                            if (content.charAt(cI - 1) == CHAR_LINE && content.charAt(cI + 1) == CHAR_LINE) {
                                 sb.append("<p> </p>");
                             } else {
                                 sb.append("<p>");
@@ -433,23 +489,46 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            //    Log.d(TAG, "beforeTextChanged: " + start + " " + after + " " + count);
-            if (count != 0) {
+            Log.d(TAG, "beforeTextChanged" +
+                    " start: " + start +
+                    " after: " + after +
+                    " count: " + count +
+                    " s:" + s.toString() +
+                    " editable: " + getEditableText().toString());
+            final boolean isDelete = count != 0;
+            if (isDelete) {
                 InnerImageSpan[] imageSpans = getEditableText().getSpans(start, start + count, InnerImageSpan.class);
                 for (InnerImageSpan imageSpan : imageSpans) {
                     getEditableText().removeSpan(imageSpan);
+                    Log.d(TAG, "onTextChanged: " + "删除了图片");
                 }
             }
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            //   Log.d(TAG, "onTextChanged: " + start + " " + before + " " + count);
+            Log.d(TAG, "onTextChanged: " +
+                    " start: " + start +
+                    " before: " + before +
+                    " count: " + count +
+                    " s:" + s.toString() +
+                    " editable: " + getEditableText().toString());
+            final boolean isInsert = count != 0;
+            if (isInsert) {
+
+            }
+
         }
+
 
         @Override
         public void afterTextChanged(Editable s) {
             Log.d(TAG, "afterTextChanged: ");
+
+        }
+
+        private boolean isPrepareInsert(int start, int count, int after) {
+            return after != 0;
         }
 
         private static class Span {
