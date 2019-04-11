@@ -13,6 +13,9 @@ public interface RichEditController {
 
     void insertPicture(@Nullable File file);
 
+    void insertPicture(@Nullable File file,@Nullable String url);
+
     void insertPicture(@Nullable Uri uri);
 
+    void insertPicture(@Nullable Uri uri,@Nullable String url);
 }

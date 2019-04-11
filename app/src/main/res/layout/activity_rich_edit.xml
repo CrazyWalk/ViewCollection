@@ -7,16 +7,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <Button
             android:id="@+id/insertPictureButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="插入一张图片" />
+
         <Button
             android:id="@+id/printHtmlButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="输出html"/>
+            android:text="输出html" />
     </LinearLayout>
 
 
@@ -25,11 +27,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <org.luyinbros.widget.self.richedit.RichEditText
-        android:id="@+id/richEditText"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#37FFC1"
-        android:gravity="start"
-        android:inputType="textMultiLine" />
+        android:background="#37FFC1">
+
+        <org.luyinbros.widget.self.richedit.RichEditText
+            android:id="@+id/richEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@null"
+            android:gravity="start"
+            android:inputType="textMultiLine" />
+    </ScrollView>
+
 </LinearLayout>
