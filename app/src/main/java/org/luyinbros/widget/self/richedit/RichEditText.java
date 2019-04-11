@@ -355,6 +355,9 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                         }
                     }
                 }
+                for (Span span : spans) {
+                    Log.d(TAG, "toHtml: " + span.toString());
+                }
                 Span $span;
                 Span $nextSpan;
                 Span $preSpan;
@@ -401,6 +404,8 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                 return stringBuilder.toString();
             }
             Log.d(TAG, "toHtml: " + "");
+
+
             return "";
         }
 
@@ -443,6 +448,7 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
             } else {
                 startIndex += 1;
             }
+
             char $char;
             for (int cI = startIndex; cI < length; cI++) {
                 $char = content.charAt(cI);
@@ -541,6 +547,16 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
                 this.span = span;
                 this.start = start;
                 this.end = end;
+            }
+
+
+            @Override
+            public String toString() {
+                return "Span{" +
+                        "span=" + span +
+                        ", start=" + start +
+                        ", end=" + end +
+                        '}';
             }
         }
     }
