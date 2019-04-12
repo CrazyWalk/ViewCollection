@@ -11,6 +11,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.CharacterStyle;
 import android.text.style.ImageSpan;
@@ -56,7 +58,31 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
     private void init(@Nullable AttributeSet attributeSet) {
         mHtmlDelegate = new HtmlEditableDelegate(this);
         deleteBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_picture_del);
+        setFilters(new InputFilter[]{
+                new InputFilter() {
+                    @Override
+                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                        Log.d(TAG, "filter1 source: " + source + " start: " + start + " end: " + end + " dest: " + dest + " dstart: " + dstart + " dend: " + dend);
+                        return null;
+                    }
+                },
+//                new InputFilter() {
+//                    @Override
+//                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+//                        Log.d(TAG, "filter2 source: " + source + " start: " + start + " end: " + end + " dest: " + dest + " dstart: " + dstart + " dend: " + dend);
+//                        return null;
+//                    }
+//                },
+//                new InputFilter() {
+//                    @Override
+//                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+//                        Log.d(TAG, "filter3 source: " + source + " start: " + start + " end: " + end + " dest: " + dest + " dstart: " + dstart + " dend: " + dend);
+//                        return "ab";
+//                    }
+//                }
+        });
 
+        setText("123456789");
     }
 
     @Override
@@ -495,30 +521,30 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            Log.d(TAG, "beforeTextChanged" +
-                    " start: " + start +
-                    " after: " + after +
-                    " count: " + count +
-                    " s:" + s.toString() +
-                    " editable: " + getEditableText().toString());
+//            Log.d(TAG, "beforeTextChanged" +
+//                    " start: " + start +
+//                    " after: " + after +
+//                    " count: " + count +
+//                    " s:" + s.toString() +
+//                    " editable: " + getEditableText().toString());
             final boolean isDelete = count != 0;
             if (isDelete) {
                 InnerImageSpan[] imageSpans = getEditableText().getSpans(start, start + count, InnerImageSpan.class);
                 for (InnerImageSpan imageSpan : imageSpans) {
                     getEditableText().removeSpan(imageSpan);
-                    Log.d(TAG, "onTextChanged: " + "删除了图片");
+                    // Log.d(TAG, "onTextChanged: " + "删除了图片");
                 }
             }
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            Log.d(TAG, "onTextChanged: " +
-                    " start: " + start +
-                    " before: " + before +
-                    " count: " + count +
-                    " s:" + s.toString() +
-                    " editable: " + getEditableText().toString());
+//            Log.d(TAG, "onTextChanged: " +
+//                    " start: " + start +
+//                    " before: " + before +
+//                    " count: " + count +
+//                    " s:" + s.toString() +
+//                    " editable: " + getEditableText().toString());
             final boolean isInsert = count != 0;
             if (isInsert) {
 
@@ -529,13 +555,10 @@ public class RichEditText extends AppCompatEditText implements RichEditControlle
 
         @Override
         public void afterTextChanged(Editable s) {
-            Log.d(TAG, "afterTextChanged: ");
+            //Log.d(TAG, "afterTextChanged: ");
 
         }
 
-        private boolean isPrepareInsert(int start, int count, int after) {
-            return after != 0;
-        }
 
         private static class Span {
             private static final Object TEXT = new Object();

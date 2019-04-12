@@ -19,6 +19,7 @@ import java.net.URL;
 public class RichEditActivity extends AppCompatActivity {
     private View insertPictureButton;
     private View printHtmlButton;
+    private View testReplaceButton;
     private ImageView insertPictureImageView;
     private RichEditText richEditText;
     private final int mSelectedPictureRequestCode = 1;
@@ -31,6 +32,7 @@ public class RichEditActivity extends AppCompatActivity {
         richEditText = findViewById(R.id.richEditText);
         printHtmlButton = findViewById(R.id.printHtmlButton);
         insertPictureImageView = findViewById(R.id.insertPictureImageView);
+        testReplaceButton = findViewById(R.id.testReplaceButton);
         insertPictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,6 +48,12 @@ public class RichEditActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 richEditText.toHtml();
+            }
+        });
+        testReplaceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               richEditText.getEditableText().replace(1, 7, "89");
             }
         });
     }
