@@ -31,6 +31,7 @@
         <activity android:name="org.luyinbros.demo.A2ZActivity" />
         <activity android:name="org.luyinbros.demo.dispatcher.TestDispatcherFragmentActivity" />
         <activity android:name="org.luyinbros.demo.RichEditActivity" />
+        <activity android:name="org.luyinbros.demo.ViewPagerActivity" />
     </application>
 
 </manifest>

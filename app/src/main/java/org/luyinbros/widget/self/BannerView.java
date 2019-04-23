@@ -7,11 +7,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-
+//fix 自动滚动的时候出现的多调的情况
 public class BannerView extends FrameLayout implements PagerView {
     private boolean mIsAutoScrollEnable = false;
     private boolean mIsInfinite = false;
@@ -49,8 +50,9 @@ public class BannerView extends FrameLayout implements PagerView {
 
     public BannerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mViewPager = new ViewPager(context);
+        mViewPager = new InnerViewPager(context);
         mViewPager.setOffscreenPageLimit(4);
+        ((InnerViewPager) mViewPager).setBannerView(this);
         mPagerAdapter = new InfiniteAdapter(this);
         addView(mViewPager, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 //        try {
@@ -110,6 +112,14 @@ public class BannerView extends FrameLayout implements PagerView {
         startAutoScroll();
     }
 
+    public void setPageMargin(int margin) {
+        mViewPager.setPageMargin(margin);
+    }
+
+    public void setOffscreenPageLimit(int limit) {
+        mViewPager.setOffscreenPageLimit(limit);
+    }
+
     public boolean isAutoScrollEnable() {
         return mIsAutoScrollEnable;
     }
@@ -125,6 +135,7 @@ public class BannerView extends FrameLayout implements PagerView {
             mAutoScrollHandler.postDelayed(mAutoScrollRunnable, mScrollDelay);
         }
     }
+
 
     private void stopAutoScroll() {
         mAutoScrollHandler.removeCallbacks(mAutoScrollRunnable);
@@ -181,7 +192,6 @@ public class BannerView extends FrameLayout implements PagerView {
                 Adapter currentAdapter = bannerView.mPagerAdapter.mAdapter;
                 if (currentAdapter == this) {
                     bannerView.setAdapter(this);
-
                 }
             }
         }
@@ -195,10 +205,27 @@ public class BannerView extends FrameLayout implements PagerView {
         }
     }
 
+    public static class LayoutParams extends FrameLayout.LayoutParams {
+
+        public LayoutParams(Context c, AttributeSet attrs) {
+            super(c, attrs);
+        }
+
+        public LayoutParams(int width, int height) {
+            super(width, height);
+        }
+
+        public LayoutParams(int width, int height, int gravity) {
+            super(width, height, gravity);
+        }
+
+    }
+
     private static class InfiniteAdapter extends PagerAdapter {
         private final static int VIRTUAL_ITEM_COUNT = 10_000_000;
         private Adapter mAdapter;
         private BannerView bannerView;
+        private int mChildCount = 0;
 
         private InfiniteAdapter(BannerView bannerView) {
             this.bannerView = bannerView;
@@ -260,6 +287,21 @@ public class BannerView extends FrameLayout implements PagerView {
             }
             return mAdapter.getItemCount();
         }
+
+        @Override
+        public void notifyDataSetChanged() {
+            mChildCount = getCount();
+            super.notifyDataSetChanged();
+        }
+
+        @Override
+        public final int getItemPosition(@NonNull Object object) {
+            if (mChildCount > 0) {
+                mChildCount--;
+                return POSITION_NONE;
+            }
+            return super.getItemPosition(object);
+        }
     }
 
     private class WrapperPagerChangeListener implements ViewPager.OnPageChangeListener {
@@ -290,7 +332,8 @@ public class BannerView extends FrameLayout implements PagerView {
             }
         }
     }
-//    private class FixedSpeedScroller extends Scroller {
+
+    //    private class FixedSpeedScroller extends Scroller {
 //        private int mDuration = 1500;
 //
 //        public FixedSpeedScroller(Context context) {
@@ -321,4 +364,34 @@ public class BannerView extends FrameLayout implements PagerView {
 //            return mDuration;
 //        }
 //    }
+    private static class InnerViewPager extends ViewPager {
+        private BannerView bannerView;
+
+        public InnerViewPager(@NonNull Context context) {
+            super(context);
+        }
+
+        public void setBannerView(BannerView bannerView) {
+            this.bannerView = bannerView;
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_MOVE:
+                    if (bannerView != null) {
+                        bannerView.stopAutoScroll();
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                default:
+                    if (bannerView != null) {
+                        bannerView.startAutoScroll();
+                    }
+                    break;
+            }
+            return super.onTouchEvent(event);
+        }
+    }
 }

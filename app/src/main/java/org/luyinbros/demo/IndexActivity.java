@@ -81,6 +81,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), RichEditActivity.class);
                     }
+                }),
+                new IndexItem("ViewPager", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), ViewPagerActivity.class);
+                    }
                 })
         };
 
