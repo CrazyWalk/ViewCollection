@@ -10,16 +10,19 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+import android.widget.Scroller;
 
-//fix 自动滚动的时候出现的多调的情况
+
 public class BannerView extends FrameLayout implements PagerView {
+    private static final String TAG = "BannerView";
     private boolean mIsAutoScrollEnable = false;
     private boolean mIsInfinite = false;
 
     private ViewPager mViewPager;
     private InfiniteAdapter mPagerAdapter;
-    private final int mScrollDelay = 1500;
+    private final int mScrollDelay = 2500;
     private final Handler mAutoScrollHandler = new Handler();
     private final Runnable mAutoScrollRunnable = new Runnable() {
         @Override
@@ -61,7 +64,7 @@ public class BannerView extends FrameLayout implements PagerView {
 //            FixedSpeedScroller scroller = new FixedSpeedScroller(context,
 //                    new AccelerateInterpolator());
 //            field.set(mViewPager, scroller);
-//            scroller.setmDuration(2000);
+//            scroller.setmDuration(1500);
 //        } catch (Exception e) {
 //            //no Action
 //        }
@@ -108,8 +111,22 @@ public class BannerView extends FrameLayout implements PagerView {
     public void setAutoScrollEnable(boolean autoScrollEnable) {
         stopAutoScroll();
         mIsAutoScrollEnable = autoScrollEnable;
-        mAutoScrollHandler.removeCallbacks(mAutoScrollRunnable);
         startAutoScroll();
+    }
+
+    @Override
+    public void setClipChildren(boolean clipChildren) {
+        super.setClipChildren(clipChildren);
+        if (mViewPager != null) {
+            mViewPager.setClipChildren(clipChildren);
+        }
+    }
+
+    public void setMarginViewPager(int marginLeft, int marginRight) {
+        FrameLayout.LayoutParams layoutParams= (FrameLayout.LayoutParams) mViewPager.getLayoutParams();
+        layoutParams.leftMargin=marginLeft;
+        layoutParams.rightMargin=marginRight;
+        mViewPager.setLayoutParams(layoutParams);
     }
 
     public void setPageMargin(int margin) {
@@ -130,8 +147,9 @@ public class BannerView extends FrameLayout implements PagerView {
     }
 
     private void startAutoScroll() {
+        mAutoScrollHandler.removeCallbacks(mAutoScrollRunnable);
         int count = mPagerAdapter.getCount();
-        if (count > 1) {
+        if (count > 1 && isAutoScrollEnable() && mIsInfinite) {
             mAutoScrollHandler.postDelayed(mAutoScrollRunnable, mScrollDelay);
         }
     }
@@ -333,37 +351,38 @@ public class BannerView extends FrameLayout implements PagerView {
         }
     }
 
-    //    private class FixedSpeedScroller extends Scroller {
-//        private int mDuration = 1500;
-//
-//        public FixedSpeedScroller(Context context) {
-//            super(context);
-//        }
-//
-//        public FixedSpeedScroller(Context context, Interpolator interpolator) {
-//            super(context, interpolator);
-//        }
-//
-//        @Override
-//        public void startScroll(int startX, int startY, int dx, int dy, int duration) {
-//            // Ignore received duration, use fixed one instead
-//            super.startScroll(startX, startY, dx, dy, mDuration);
-//        }
-//
-//        @Override
-//        public void startScroll(int startX, int startY, int dx, int dy) {
-//            // Ignore received duration, use fixed one instead
-//            super.startScroll(startX, startY, dx, dy, mDuration);
-//        }
-//
-//        public void setmDuration(int time) {
-//            mDuration = time;
-//        }
-//
-//        public int getmDuration() {
-//            return mDuration;
-//        }
-//    }
+    private class FixedSpeedScroller extends Scroller {
+        private int mDuration = 1500;
+
+        public FixedSpeedScroller(Context context) {
+            super(context);
+        }
+
+        public FixedSpeedScroller(Context context, Interpolator interpolator) {
+            super(context, interpolator);
+        }
+
+        @Override
+        public void startScroll(int startX, int startY, int dx, int dy, int duration) {
+            // Ignore received duration, use fixed one instead
+            super.startScroll(startX, startY, dx, dy, mDuration);
+        }
+
+        @Override
+        public void startScroll(int startX, int startY, int dx, int dy) {
+            // Ignore received duration, use fixed one instead
+            super.startScroll(startX, startY, dx, dy, mDuration);
+        }
+
+        public void setmDuration(int time) {
+            mDuration = time;
+        }
+
+        public int getmDuration() {
+            return mDuration;
+        }
+    }
+
     private static class InnerViewPager extends ViewPager {
         private BannerView bannerView;
 

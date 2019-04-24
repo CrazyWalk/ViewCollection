@@ -183,6 +183,10 @@ public class UniverseRefreshRecyclerView extends RefreshLayout implements Refres
         return mRecyclerView.getLayoutManager();
     }
 
+    public void setItemViewCacheSize(int cacheSize) {
+        mRecyclerView.setItemViewCacheSize(cacheSize);
+    }
+
     /**
      * 添加 recyclerView 装饰者
      *
