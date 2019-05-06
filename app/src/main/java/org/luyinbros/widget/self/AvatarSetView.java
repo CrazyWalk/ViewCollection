@@ -6,19 +6,23 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 public class AvatarSetView extends ViewGroup {
-    private LinkedList<ImageView> linkedList;
+    private List<ImageView> linkedList;
     private final int overlapSize;
-    private int mMaxVisibleCount = 3;
     private AnimatorSet mAnimatorSet;
+    private Adapter mAdapter;
 
     public AvatarSetView(Context context) {
         this(context, null);
@@ -32,10 +36,7 @@ public class AvatarSetView extends ViewGroup {
         super(context, attrs, defStyleAttr);
         linkedList = new LinkedList<>();
         overlapSize = 20;
-        insertLastView();
-        insertLastView();
-        insertLastView();
-        insertLastView();
+
     }
 
     public void startAnim() {
@@ -46,44 +47,84 @@ public class AvatarSetView extends ViewGroup {
         mAnimatorSet.start();
     }
 
-    public void insertLastView() {
-        int currentSize = linkedList.size();
-        ImageView lastView = newRandomImageView();
-        linkedList.addLast(lastView);
-        addView(lastView);
 
-//        if (currentSize >= mMaxVisibleCount) {
-//            ImageView firstView = linkedList.getFirst();
-//            linkedList.removeFirst();
-//            removeView(firstView);
-//        }
-    }
-
-    public void insertFirstView() {
-        int currentSize = linkedList.size();
-        ImageView firstView = newRandomImageView();
-        linkedList.addFirst(firstView);
-        addView(firstView, 0);
-
-        if (currentSize >= mMaxVisibleCount) {
-            ImageView lastView = linkedList.getLast();
-            linkedList.removeLast();
-            removeView(lastView);
+    public void setAdapter(Adapter adapter) {
+        if (mAdapter != null) {
+            mAdapter.mAvatarSetView = null;
         }
+        mAdapter = adapter;
+        if (mAdapter != null) {
+            mAdapter.mAvatarSetView = this;
+        }
+        notifyDataSetChanged();
     }
 
 
-    private ImageView newRandomImageView() {
-        ImageView imageView = newImageView();
-        GradientDrawable gradientDrawable = new GradientDrawable();
-        gradientDrawable.setColor(Color.argb(
-                255,
-                (int) (Math.random() * 266),
-                (int) (Math.random() * 266),
-                (int) (Math.random() * 266)));
-        gradientDrawable.setShape(GradientDrawable.OVAL);
-        imageView.setImageDrawable(gradientDrawable);
-        return imageView;
+    void notifyDataSetChanged() {
+        linkedList.clear();
+        removeAllViews();
+        if (mAdapter != null) {
+            final int totalCount = mAdapter.getCount();
+            if (totalCount != 0) {
+                final int maxVisibleCount = mAdapter.getMaxVisibleCount();
+                if (maxVisibleCount != 0) {
+                    final int visibleIndexStart = totalCount - maxVisibleCount < 0 ? 0 : totalCount - maxVisibleCount;
+                    if (visibleIndexStart < totalCount) {
+                        linkedList = new ArrayList<>(maxVisibleCount);
+                        ImageView $imageView;
+                        for (int i = visibleIndexStart; i < totalCount; i++) {
+                            $imageView = newImageView();
+                            linkedList.add($imageView);
+                            mAdapter.onBindAvatarItemView($imageView, i);
+                            addView($imageView);
+                        }
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    void notifyItemInserted(int position) {
+//        if (mAdapter != null) {
+//            final int totalCount = mAdapter.getCount();
+//            if (totalCount != 0) {
+//                final int maxVisibleCount = mAdapter.getMaxVisibleCount();
+//                final int visibleIndexStart = totalCount - maxVisibleCount;
+//                if (position > visibleIndexStart && position < totalCount) {
+//                    ImageView insertImageView = newImageView();
+//                    mAdapter.onBindAvatarItemView(insertImageView, position);
+//                    linkedList.add(position, insertImageView);
+//                    addView(insertImageView, position);
+//                }
+//            }
+//        }
+
+    }
+
+    void notifyItemRemoved(int position) {
+//        if (mAdapter != null) {
+//            int count = mAdapter.getCount();
+//            ImageView targetImageView = null;
+//            if (position < count) {
+//                ListIterator<ImageView> listIterator = linkedList.listIterator();
+//                while (listIterator.hasNext()) {
+//                    //先在前
+//                    int index = listIterator.nextIndex();
+//                    targetImageView = listIterator.next();
+//                    if (index == position) {
+//                        listIterator.remove();
+//                        break;
+//                    } else {
+//                        targetImageView = null;
+//                    }
+//                }
+//                if (targetImageView != null) {
+//                    removeView(targetImageView);
+//                }
+//            }
+//        }
     }
 
 
@@ -129,7 +170,7 @@ public class AvatarSetView extends ViewGroup {
             }
             parentWidth = parentWidth - (size - 1) * overlapSize;
 
-            setMeasuredDimension(parentWidth, linkedList.getFirst().getMeasuredHeight());
+            setMeasuredDimension(parentWidth, linkedList.get(0).getMeasuredHeight());
         } else {
             setMeasuredDimension(0, 0);
         }
@@ -156,5 +197,34 @@ public class AvatarSetView extends ViewGroup {
         return v.getParent() == this && v.getVisibility() == VISIBLE;
     }
 
+    public static abstract class Adapter {
+        private AvatarSetView mAvatarSetView;
 
+        public abstract void onBindAvatarItemView(ImageView imageView, int position);
+
+        public abstract int getCount();
+
+        public abstract int getMaxVisibleCount();
+
+
+        public void notifyDataSetChanged() {
+            if (mAvatarSetView != null) {
+                mAvatarSetView.notifyDataSetChanged();
+            }
+        }
+
+        public void notifyItemInserted(int position) {
+            if (mAvatarSetView != null) {
+                mAvatarSetView.notifyItemInserted(position);
+            }
+        }
+
+        public void notifyItemRemoved(int position) {
+            if (mAvatarSetView != null) {
+                mAvatarSetView.notifyItemRemoved(position);
+            }
+        }
+
+
+    }
 }

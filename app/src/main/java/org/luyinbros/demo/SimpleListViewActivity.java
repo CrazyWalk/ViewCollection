@@ -1,5 +1,6 @@
 package org.luyinbros.demo;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,19 +12,66 @@ import android.widget.TextView;
 import org.luyinbros.widget.R;
 import org.luyinbros.widget.list.AbstractSimpleListController;
 import org.luyinbros.widget.list.ListController;
+import org.luyinbros.widget.list.SimpleGridLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleListViewActivity extends AppCompatActivity {
     private InnerController mGridListController;
+    private SimpleGridLayout mSimpleGridLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_list_view);
         mGridListController = new InnerController((ViewGroup) findViewById(R.id.simpleGridLayout));
+        mSimpleGridLayout = findViewById(R.id.mSimpleGridLayout);
+
+        ListController<ViewHolder> listController = new AbstractSimpleListController<ViewHolder>(mSimpleGridLayout) {
+            private int selectedIndex = 0;
+
+            @NonNull
+            @Override
+            public SimpleListViewActivity.ViewHolder onCreateHolder(ViewGroup container, int viewType) {
+                TextView textView = new TextView(container.getContext());
+                textView.setBackgroundColor(Color.YELLOW);
+                textView.setPadding(0,20,0,20);
+                final SimpleListViewActivity.ViewHolder holder = new SimpleListViewActivity.ViewHolder(textView);
+
+                holder.textView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int oldIndex = selectedIndex;
+                        selectedIndex = holder.getPosition();
+                        if (oldIndex != -1) {
+                            notifyItemChanged(oldIndex);
+                        }
+                        notifyItemChanged(selectedIndex);
+
+                    }
+                });
+                return holder;
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull SimpleListViewActivity.ViewHolder holder, int position) {
+                if (selectedIndex == position) {
+                    holder.textView.setTextColor(Color.RED);
+                } else {
+                    holder.textView.setTextColor(Color.BLACK);
+                }
+                holder.textView.setText(position+"");
+            }
+
+            @Override
+            public int getItemCount() {
+                return 5;
+            }
+        };
+        listController.notifyDataSetInvalidated();
     }
+
 
     public void onSetInvalidated(View v) {
         mGridListController.textList = new ArrayList<>();
@@ -40,12 +88,12 @@ public class SimpleListViewActivity extends AppCompatActivity {
 
     public void onChangedLast(View v) {
         mGridListController.textList.add(mGridListController.textList.size() + "");
-        mGridListController.notifyItemChanged(mGridListController.textList.size()-1);
+        mGridListController.notifyItemChanged(mGridListController.textList.size() - 1);
     }
 
     public void onLastInsert(View v) {
         mGridListController.textList.add(mGridListController.textList.size() + "");
-        mGridListController.notifyItemInserted(mGridListController.textList.size()-1);
+        mGridListController.notifyItemInserted(mGridListController.textList.size() - 1);
     }
 
     public void onDelete(View v) {
@@ -87,7 +135,7 @@ public class SimpleListViewActivity extends AppCompatActivity {
 
         public ViewHolder(@NonNull TextView textView) {
             super(textView);
-            this.textView=textView;
+            this.textView = textView;
             textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }

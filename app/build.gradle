@@ -20,6 +20,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.github.lsjwzh.RecyclerViewPager:lib:v1.1.2@aar'
+    //implementation 'androidx.viewpager2:viewpager2:1.0.0-alpha03'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'org.luyinbros.widget:recyclecell:0.0.2'

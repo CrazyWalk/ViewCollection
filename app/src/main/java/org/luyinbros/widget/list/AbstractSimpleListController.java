@@ -216,7 +216,7 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
     private VH _onCreateHolder(ViewGroup container, int viewType) {
         VH vh = onCreateHolder(container, viewType);
         vh.mItemViewType = viewType;
-
+        vh.listController = this;
         return vh;
     }
 

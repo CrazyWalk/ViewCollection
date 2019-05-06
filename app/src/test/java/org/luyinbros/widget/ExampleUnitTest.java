@@ -2,6 +2,9 @@ package org.luyinbros.widget;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 /**
@@ -12,6 +15,12 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+        List<String> list = new ArrayList<>();
+        list.add("0");
+        list.add("1");
+        list.add("2");
+        list.add(0, "new0");
+        list.add(4, "new0");
+        System.out.println(list);
     }
 }

@@ -51,6 +51,7 @@
 
     </org.luyinbros.widget.list.SimpleGridLayout>
 
+
     <org.luyinbros.widget.list.SimpleGridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -93,12 +94,19 @@
             android:text="插入一条数据" />
     </org.luyinbros.widget.list.SimpleGridLayout>
 
+    <org.luyinbros.widget.list.SimpleGridLayout
+        android:id="@+id/mSimpleGridLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp" />
+
     <org.luyinbros.widget.list.FlowLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        app:flowL_rowMargin="10dp"
-        app:flowL_columnMargin="10dp">
+        app:flowL_columnMargin="10dp"
+        app:flowL_rowMargin="10dp">
 
         <TextView
             android:layout_width="100dp"

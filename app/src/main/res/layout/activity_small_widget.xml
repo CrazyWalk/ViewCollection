@@ -36,23 +36,29 @@
         app:layout_constraintTop_toBottomOf="@+id/praiseTextView" />
 
     <Button
-        android:id="@+id/avatarSetViewInsertLastButton"
+        android:id="@+id/avatarSetViewInsertButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Insert Last"
-        app:layout_constraintBottom_toBottomOf="@+id/avatarSetViewInsertFirstButton"
-        app:layout_constraintStart_toEndOf="@+id/avatarSetViewInsertFirstButton"
-        app:layout_constraintTop_toTopOf="@+id/avatarSetViewInsertFirstButton" />
+        android:text="Insert"
+        app:layout_constraintBottom_toBottomOf="@+id/avatarSetViewRemoveButton"
+        app:layout_constraintStart_toEndOf="@+id/avatarSetViewRemoveButton"
+        app:layout_constraintTop_toTopOf="@+id/avatarSetViewRemoveButton" />
 
     <Button
-        android:id="@+id/avatarSetViewInsertFirstButton"
+        android:id="@+id/avatarSetViewRemoveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Insert First"
+        android:text="Remove"
         app:layout_constraintBottom_toBottomOf="@+id/avatarSetView"
         app:layout_constraintStart_toEndOf="@+id/avatarSetView"
         app:layout_constraintTop_toTopOf="@+id/avatarSetView" />
 
+    <org.luyinbros.widget.self.VideoSeekBar
+        android:id="@+id/videoSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/avatarSetViewRemoveButton" />
 </android.support.constraint.ConstraintLayout>
