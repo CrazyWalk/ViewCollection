@@ -1,6 +1,7 @@
 package org.luyinbros.demo;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.luyinbros.utils.Dimens;
 import org.luyinbros.widget.R;
 import org.luyinbros.widget.list.AbstractSimpleListController;
 import org.luyinbros.widget.list.ListController;
@@ -28,6 +30,42 @@ public class SimpleListViewActivity extends AppCompatActivity {
         mGridListController = new InnerController((ViewGroup) findViewById(R.id.simpleGridLayout));
         mSimpleGridLayout = findViewById(R.id.mSimpleGridLayout);
 
+        ListController<InnerViewHolder> linearLayoutController = new AbstractSimpleListController<InnerViewHolder>((ViewGroup) findViewById(R.id.labelListView)) {
+            @NonNull
+            @Override
+            public SimpleListViewActivity.InnerViewHolder onCreateHolder(ViewGroup container, int viewType) {
+                TextView textView = new TextView(container.getContext());
+                textView.setPadding(Dimens.px(container.getContext(), 6f),
+                        Dimens.px(container.getContext(), 2f),
+                        Dimens.px(container.getContext(), 6f),
+                        Dimens.px(container.getContext(), 2f));
+                textView.setTextSize(10f);
+                textView.setTextColor(0xFFFFFFFF);
+                textView.setLayoutParams(new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                GradientDrawable backgroundView = new GradientDrawable();
+                backgroundView.setColor(0X1a3d3b3b);
+                float radius = Dimens.px(container.getContext(), 9f);
+                backgroundView.setCornerRadii(new float[]{radius, radius, radius, radius, radius, radius, radius, radius});
+                backgroundView.setStroke(Dimens.px(container.getContext(), 1f), 0xFFFFFFFF);
+                textView.setBackground(backgroundView);
+                return new SimpleListViewActivity.InnerViewHolder(textView);
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull SimpleListViewActivity.InnerViewHolder holder, int position) {
+                ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
+                marginLayoutParams.setMarginEnd(10);
+                holder.itemView.setLayoutParams(marginLayoutParams);
+                holder.textView.setText("" + position);
+            }
+
+            @Override
+            public int getItemCount() {
+                return 10;
+            }
+        };
+         linearLayoutController.notifyDataSetInvalidated();
+
         ListController<ViewHolder> listController = new AbstractSimpleListController<ViewHolder>(mSimpleGridLayout) {
             private int selectedIndex = 0;
 
@@ -36,7 +74,7 @@ public class SimpleListViewActivity extends AppCompatActivity {
             public SimpleListViewActivity.ViewHolder onCreateHolder(ViewGroup container, int viewType) {
                 TextView textView = new TextView(container.getContext());
                 textView.setBackgroundColor(Color.YELLOW);
-                textView.setPadding(0,20,0,20);
+                textView.setPadding(0, 20, 0, 20);
                 final SimpleListViewActivity.ViewHolder holder = new SimpleListViewActivity.ViewHolder(textView);
 
                 holder.textView.setOnClickListener(new View.OnClickListener() {
@@ -61,7 +99,7 @@ public class SimpleListViewActivity extends AppCompatActivity {
                 } else {
                     holder.textView.setTextColor(Color.BLACK);
                 }
-                holder.textView.setText(position+"");
+                holder.textView.setText(position + "");
             }
 
             @Override
@@ -137,6 +175,15 @@ public class SimpleListViewActivity extends AppCompatActivity {
             super(textView);
             this.textView = textView;
             textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    private static class InnerViewHolder extends ListController.ViewHolder {
+        private TextView textView;
+
+        public InnerViewHolder(@NonNull TextView textView) {
+            super(textView);
+            this.textView = textView;
         }
     }
 }

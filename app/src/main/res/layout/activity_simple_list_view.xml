@@ -138,4 +138,18 @@
             android:background="#FFC529"
             android:text="5" />
     </org.luyinbros.widget.list.FlowLayout>
+
+
+    <android.support.v7.widget.LinearLayoutCompat
+        android:id="@+id/labelListView"
+        android:layout_width="wrap_content"
+        android:layout_gravity="end"
+        android:background="@android:color/black"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center_vertical|end"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 </LinearLayout>

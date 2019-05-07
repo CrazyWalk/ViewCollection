@@ -37,8 +37,9 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         VH viewHolder;
         for (int i = 0; i < getItemCount(); i++) {
             viewHolder = _onCreateHolder(mParent, getItemViewType(i));
-            onBindViewHolder(viewHolder, i);
+            //必须对调，要不然无法手动改layoutParams
             mParent.addView(viewHolder.itemView);
+            onBindViewHolder(viewHolder, i);
             mViewHolderList.add(viewHolder);
         }
     }

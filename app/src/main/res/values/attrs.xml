@@ -41,5 +41,9 @@
     <declare-styleable name="FlowLayout">
         <attr name="flowL_columnMargin" format="dimension|reference" />
         <attr name="flowL_rowMargin" format="dimension|reference" />
+        <attr name="flowL_gravity" format="enum">
+            <enum name="start" value="0" />
+            <enum name="end" value="0" />
+        </attr>
     </declare-styleable>
 </resources>
