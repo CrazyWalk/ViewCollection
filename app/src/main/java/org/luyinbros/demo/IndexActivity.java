@@ -93,6 +93,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), ViewPagerActivity.class);
                     }
+                }),
+                new IndexItem("PDF", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), PdfActivity.class);
+                    }
                 })
         };
 

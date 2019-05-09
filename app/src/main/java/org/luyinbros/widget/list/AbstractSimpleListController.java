@@ -32,12 +32,11 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
 
     @Override
     public final void notifyDataSetInvalidated() {
-        mViewHolderList = new ArrayList<>(getItemCount());
+        mViewHolderList.clear();
         mParent.removeAllViews();
         VH viewHolder;
         for (int i = 0; i < getItemCount(); i++) {
             viewHolder = _onCreateHolder(mParent, getItemViewType(i));
-            //必须对调，要不然无法手动改layoutParams
             mParent.addView(viewHolder.itemView);
             onBindViewHolder(viewHolder, i);
             mViewHolderList.add(viewHolder);
@@ -46,30 +45,33 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
 
     @Override
     public final void notifyDataSetChanged() {
-        checkViewHolder();
-        List<VH> newHolderList = new ArrayList<>(getItemCount());
-        mParent.removeAllViews();
-        VH viewHolder;
-        for (int i = 0; i < getItemCount(); i++) {
-            if (i < mViewHolderList.size()) {
-                viewHolder = mViewHolderList.get(i);
-                if (isMatchHolder(viewHolder, i)) {
-                    onBindViewHolder(viewHolder, i);
+        if (checkViewHolder()) {
+            List<VH> newHolderList = new ArrayList<>(getItemCount());
+            mParent.removeAllViews();
+            VH viewHolder;
+            for (int i = 0; i < getItemCount(); i++) {
+                if (i < mViewHolderList.size()) {
+                    viewHolder = mViewHolderList.get(i);
+                    if (isMatchHolder(viewHolder, i)) {
+                        onBindViewHolder(viewHolder, i);
+                    } else {
+                        viewHolder = _onCreateHolder(mParent, getItemViewType(i));
+                        onBindViewHolder(viewHolder, i);
+                        mParent.addView(viewHolder.itemView);
+                        newHolderList.add(viewHolder);
+                    }
+                    newHolderList.add(viewHolder);
                 } else {
                     viewHolder = _onCreateHolder(mParent, getItemViewType(i));
                     onBindViewHolder(viewHolder, i);
                     mParent.addView(viewHolder.itemView);
                     newHolderList.add(viewHolder);
                 }
-                newHolderList.add(viewHolder);
-            } else {
-                viewHolder = _onCreateHolder(mParent, getItemViewType(i));
-                onBindViewHolder(viewHolder, i);
-                mParent.addView(viewHolder.itemView);
-                newHolderList.add(viewHolder);
             }
+            mViewHolderList.clear();
+            mViewHolderList.addAll(newHolderList);
         }
-        mViewHolderList = newHolderList;
+
     }
 
     @Override
@@ -77,22 +79,22 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         if (position >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
         } else {
-            checkViewHolder();
-            int cacheHolderSize = mViewHolderList.size();
-            if (position < cacheHolderSize) {
-                VH cacheHolder = mViewHolderList.get(position);
-                if (isMatchHolder(cacheHolder, position)) {
-                    onBindViewHolder(cacheHolder, position);
-                } else {
-                    notifyItemRemoved(position);
+            if (checkViewHolder()) {
+                int cacheHolderSize = mViewHolderList.size();
+                if (position < cacheHolderSize) {
+                    VH cacheHolder = mViewHolderList.get(position);
+                    if (isMatchHolder(cacheHolder, position)) {
+                        onBindViewHolder(cacheHolder, position);
+                    } else {
+                        notifyItemRemoved(position);
+                        notifyItemInserted(position);
+                    }
+                } else if (position == cacheHolderSize) {
                     notifyItemInserted(position);
+                } else {
+                    throw new IndexOutOfBoundsException("");
                 }
-            } else if (position == cacheHolderSize) {
-                notifyItemInserted(position);
-            } else {
-                throw new IndexOutOfBoundsException("");
             }
-
         }
     }
 
@@ -103,23 +105,23 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         } else if (positionStart + itemCount >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
         } else {
-            checkViewHolder();
-            int cacheHolderSize = mViewHolderList.size();
-            for (int i = positionStart; i < positionStart + itemCount; i++) {
-                VH cacheHolder = mViewHolderList.get(i);
-                if (i < cacheHolderSize) {
-                    if (isMatchHolder(cacheHolder, i)) {
-                        onBindViewHolder(cacheHolder, i);
+            if (checkViewHolder()) {
+                int cacheHolderSize = mViewHolderList.size();
+                for (int i = positionStart; i < positionStart + itemCount; i++) {
+                    VH cacheHolder = mViewHolderList.get(i);
+                    if (i < cacheHolderSize) {
+                        if (isMatchHolder(cacheHolder, i)) {
+                            onBindViewHolder(cacheHolder, i);
+                        } else {
+                            notifyItemRemoved(i);
+                            notifyItemInserted(i);
+                        }
                     } else {
-                        notifyItemRemoved(i);
                         notifyItemInserted(i);
                     }
-                } else {
-                    notifyItemInserted(i);
+
                 }
-
             }
-
         }
     }
 
@@ -128,28 +130,31 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         if (position >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
         } else {
-            checkViewHolder();
-            VH viewHolder = _onCreateHolder(mParent, getItemViewType(position));
-            onBindViewHolder(viewHolder, position);
-            mParent.addView(viewHolder.itemView, position);
-            mViewHolderList.add(position, viewHolder);
+            if (checkViewHolder()) {
+                VH viewHolder = _onCreateHolder(mParent, getItemViewType(position));
+                onBindViewHolder(viewHolder, position);
+                mParent.addView(viewHolder.itemView, position);
+                mViewHolderList.add(position, viewHolder);
+            }
+
         }
     }
 
     public final void notifyItemRangeInserted(int positionStart, int itemCount) {
         if (positionStart >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
-        } else if (positionStart + itemCount >= getItemCount()) {
-            throw new IndexOutOfBoundsException("");
+        } else if (positionStart + itemCount > getItemCount()) {
+            throw new IndexOutOfBoundsException("positionStart: " + positionStart + " insertCount: " + itemCount + " itemCount:" + getItemCount());
         } else {
-            checkViewHolder();
-            int cacheHolderSize = mViewHolderList.size();
-            if (positionStart >= cacheHolderSize) {
-                for (int i = positionStart; i < positionStart + itemCount; i++) {
-                    notifyItemInserted(i);
+            if (checkViewHolder()) {
+                int cacheHolderSize = mViewHolderList.size();
+                if (positionStart >= cacheHolderSize) {
+                    for (int i = positionStart; i < positionStart + itemCount; i++) {
+                        notifyItemInserted(i);
+                    }
+                } else {
+                    throw new IndexOutOfBoundsException("");
                 }
-            } else {
-                throw new IndexOutOfBoundsException("");
             }
         }
     }
@@ -159,9 +164,11 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         if (position >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
         } else {
-            checkViewHolder();
-            mViewHolderList.remove(position);
-            mParent.removeViewAt(position);
+            if (checkViewHolder()){
+                mViewHolderList.remove(position);
+                mParent.removeViewAt(position);
+            }
+
         }
     }
 
@@ -172,14 +179,15 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         } else if (positionStart + itemCount >= getItemCount()) {
             throw new IndexOutOfBoundsException("");
         } else {
-            checkViewHolder();
-            int cacheHolderSize = mViewHolderList.size();
-            if (positionStart >= cacheHolderSize) {
-                for (int i = positionStart + itemCount; i > positionStart - 1; i++) {
-                    notifyItemRemoved(i);
+            if (checkViewHolder()){
+                int cacheHolderSize = mViewHolderList.size();
+                if (positionStart >= cacheHolderSize) {
+                    for (int i = positionStart + itemCount; i > positionStart - 1; i++) {
+                        notifyItemRemoved(i);
+                    }
+                } else {
+                    throw new IndexOutOfBoundsException("");
                 }
-            } else {
-                throw new IndexOutOfBoundsException("");
             }
         }
     }
@@ -190,7 +198,7 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
         return mViewHolderList.indexOf(holder);
     }
 
-    private void checkViewHolder() {
+    private boolean checkViewHolder() {
         int cacheHolderSize = mViewHolderList.size();
         int parentChildSize = mParent.getChildCount();
         if (cacheHolderSize == parentChildSize) {
@@ -199,14 +207,17 @@ public abstract class AbstractSimpleListController<VH extends AbstractSimpleList
             for (int i = 0; i < parentChildSize; i++) {
                 holder = mViewHolderList.get(i);
                 child = mParent.getChildAt(i);
-                if (holder.mItemViewType != getItemViewType(i) || holder.itemView != child) {
+                int currentViewType = getItemViewType(i);
+                if (holder.mItemViewType != currentViewType || holder.itemView != child) {
                     notifyDataSetInvalidated();
-                    break;
+                    return false;
                 }
             }
         } else {
             notifyDataSetInvalidated();
+            return false;
         }
+        return true;
     }
 
     private boolean isMatchHolder(ViewHolder holder, int position) {

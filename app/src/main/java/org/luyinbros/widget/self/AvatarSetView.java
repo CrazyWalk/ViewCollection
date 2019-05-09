@@ -86,22 +86,19 @@ public class AvatarSetView extends ViewGroup {
 
     }
 
-    void notifyItemInserted(int position) {
-//        if (mAdapter != null) {
-//            final int totalCount = mAdapter.getCount();
-//            if (totalCount != 0) {
-//                final int maxVisibleCount = mAdapter.getMaxVisibleCount();
-//                final int visibleIndexStart = totalCount - maxVisibleCount;
-//                if (position > visibleIndexStart && position < totalCount) {
-//                    ImageView insertImageView = newImageView();
-//                    mAdapter.onBindAvatarItemView(insertImageView, position);
-//                    linkedList.add(position, insertImageView);
-//                    addView(insertImageView, position);
-//                }
-//            }
-//        }
+    public void notifyLastItemInserted() {
+        if (mAdapter != null) {
+            final int count = mAdapter.getCount();
+            final int maxVisibleCount = mAdapter.getMaxVisibleCount();
+            if (count <= maxVisibleCount) {
+                ImageView $imageView = newImageView();
+                linkedList.add($imageView);
+                addView($imageView);
 
+            }
+        }
     }
+    //  void notifyItemInserted(int position) { }
 
     void notifyItemRemoved(int position) {
 //        if (mAdapter != null) {
@@ -213,11 +210,16 @@ public class AvatarSetView extends ViewGroup {
             }
         }
 
-        public void notifyItemInserted(int position) {
+        public void notifyLastItemInserted() {
             if (mAvatarSetView != null) {
-                mAvatarSetView.notifyItemInserted(position);
+                mAvatarSetView.notifyLastItemInserted();
             }
         }
+//        public void notifyItemInserted(int position) {
+//            if (mAvatarSetView != null) {
+//                mAvatarSetView.notifyItemInserted(position);
+//            }
+//        }
 
         public void notifyItemRemoved(int position) {
             if (mAvatarSetView != null) {
