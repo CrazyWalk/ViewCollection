@@ -41,7 +41,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name="org.luyinbros.demo.PdfActivity"
+            android:name="com.luyinbros.pdf.PDFActivity"
             android:screenOrientation="portrait" />
     </application>
 

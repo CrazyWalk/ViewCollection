@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.luyinbros.pdf.PDFActivity;
+
 import org.luyinbros.demo.dispatcher.TestDispatcherFragmentActivity;
 
 public class IndexActivity extends AppCompatActivity {
@@ -97,7 +99,7 @@ public class IndexActivity extends AppCompatActivity {
                 new IndexItem("PDF", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startActivity(v.getContext(), PdfActivity.class);
+                        startActivity(v.getContext(), PDFActivity.class);
                     }
                 })
         };
