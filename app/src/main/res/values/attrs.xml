@@ -46,4 +46,13 @@
             <enum name="end" value="0" />
         </attr>
     </declare-styleable>
+
+    <declare-styleable name="BadgeImageView">
+        <attr name="imageBadge_color" format="color|reference" />
+        <attr name="imageBadge_textColor" format="color|reference" />
+        <attr name="imageBadge_textSize" format="dimension|reference" />
+        <attr name="imageBadge_radiusSize" format="dimension|reference" />
+        <attr name="imageBadge_translationX" format="dimension|reference" />
+        <attr name="imageBadge_translationY" format="dimension|reference" />
+    </declare-styleable>
 </resources>

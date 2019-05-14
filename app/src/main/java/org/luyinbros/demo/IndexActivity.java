@@ -87,7 +87,7 @@ public class IndexActivity extends AppCompatActivity {
                 new IndexItem("播放器", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startActivity(v.getContext(),VideoActivity.class);
+                        startActivity(v.getContext(), VideoActivity.class);
                     }
                 }),
                 new IndexItem("ViewPager", new View.OnClickListener() {
@@ -100,6 +100,12 @@ public class IndexActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         startActivity(v.getContext(), PDFActivity.class);
+                    }
+                }),
+                new IndexItem("TabLayout", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), MusicbibleTabLayoutActivity.class);
                     }
                 })
         };
