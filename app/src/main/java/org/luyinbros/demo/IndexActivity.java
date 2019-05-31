@@ -107,6 +107,12 @@ public class IndexActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         startActivity(v.getContext(), MusicbibleTabLayoutActivity.class);
                     }
+                }),
+                new IndexItem("通知栏", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(v.getContext(), NotificationActivity.class);
+                    }
                 })
         };
 
